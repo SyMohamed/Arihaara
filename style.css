@@ -249,17 +249,128 @@ footer { background: var(--black); padding: 3rem 2rem; text-align: center; borde
 .pdel { position: absolute; top: -5px; right: -5px; background: #a02020; color: #fff; border: none; width: 17px; height: 17px; border-radius: 50%; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .ferr { color: #a02020; font-size: 0.78rem; margin-top: 0.35rem; display: none; }
 
-/* ── RESPONSIVE ── */
+/* ── RESPONSIVE - MOBILE FIRST ── */
+
+/* Tablet */
 @media (max-width: 768px) {
-  nav { padding: 0.65rem 1rem; }
-  .nav-links a { padding: 0.5rem 0.6rem; font-size: 0.68rem; letter-spacing: 0.1em; }
+  nav { padding: 0.65rem 1rem; gap: 0.3rem; flex-wrap: wrap; }
+  .nav-logo img { height: 32px; }
+  .nav-logo-text { font-size: 0.78rem; }
+  .nav-links { order: 3; width: 100%; justify-content: center; margin-top: 0.3rem; }
+  .nav-links a { padding: 0.4rem 0.5rem; font-size: 0.62rem; letter-spacing: 0.08em; }
+  .page-top { padding-top: 100px; }
+  .pg-banner { padding: 4rem 1.5rem 2.5rem; }
   .hist-grid, .em-grid { grid-template-columns: 1fr; gap: 2rem; }
   .act-item, .act-item:nth-child(even) { grid-template-columns: 1fr; direction: ltr; }
-  .mem-grid { padding: 2rem 1rem; }
+  .mem-grid { padding: 2rem 1rem; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+  .auth-grid { grid-template-columns: 1fr; }
+  .profile-banner { flex-direction: column; text-align: center; gap: 1rem; }
+  .profile-banner button { margin-left: 0; }
+  .fund-grid { grid-template-columns: 1fr; padding: 2rem 1rem; gap: 1.2rem; }
+  .contrib-item { gap: 0.6rem; }
+  .contrib-amount { font-size: 0.95rem; }
+  .modal { width: 96%; max-height: 95vh; }
+  .modal.wide { max-width: 96%; }
+  .mhd { padding: 1rem 1.2rem; }
+  .mhd h3 { font-size: 0.82rem; }
+  .mbd { padding: 1.2rem; }
+  .tabs { flex-wrap: wrap; gap: 0.2rem; }
+  .tab { padding: 0.4rem 0.6rem; font-size: 0.62rem; }
+  .sec { padding: 3rem 1.5rem; }
+  .hero h1 { font-size: clamp(2rem, 9vw, 4rem); }
+  .hero-logo-img { width: 72px; height: 72px; margin-bottom: 1rem; }
+  .caisse-hero { padding: 4rem 1rem 3rem; }
+  .caisse-total { font-size: clamp(1.8rem, 7vw, 3rem); }
+  footer { padding: 2rem 1rem; }
+  #admin-fab { bottom: 1rem; right: 1rem; font-size: 0.65rem; padding: 0.5rem 0.9rem; }
 }
 
-
-/* MEMBERS */
+/* Small phone */
+@media (max-width: 480px) {
+  nav { padding: 0.5rem 0.6rem; }
+  .nav-logo img { height: 28px; }
+  .nav-logo-text { font-size: 0.7rem; letter-spacing: 0.08em; }
+  .nav-links a { padding: 0.3rem 0.35rem; font-size: 0.52rem; letter-spacing: 0.05em; }
+  .btn-admin, .btn-member-nav { font-size: 0.52rem; padding: 0.25rem 0.4rem; letter-spacing: 0.06em; }
+  .page-top { padding-top: 95px; }
+  .pg-banner { padding: 3.5rem 1rem 2rem; }
+  .pg-banner-sub { font-size: 0.85rem; }
+  .ttl { font-size: clamp(1.3rem, 5vw, 1.8rem); }
+  .lbl { font-size: 0.6rem; }
+  .fund-grid { padding: 1.5rem 0.8rem; gap: 1rem; }
+  .fund-card-top { padding: 1.2rem 1rem 0.8rem; }
+  .fund-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  .fund-name { font-size: 0.95rem; }
+  .fund-desc { font-size: 0.78rem; }
+  .fund-raised { font-size: 1rem; }
+  .fund-goal { font-size: 0.65rem; }
+  .fund-card-bottom { padding: 0.6rem 1rem; }
+  .fund-btn { font-size: 0.62rem; padding: 0.3rem 0.7rem; }
+  .acts-grid { grid-template-columns: 1fr !important; padding: 1.5rem 0.8rem !important; }
+  .act-card-cover { height: 180px; }
+  .act-card-info { padding: 1rem; }
+  .act-card-title { font-size: 0.95rem; }
+  .act-card-snippet { font-size: 0.85rem; }
+  .act-detail { padding: 1.5rem 1rem; padding-top: 3.5rem; }
+  .act-detail-title { font-size: 1.3rem; }
+  .act-detail-photos.g2, .act-detail-photos.g3 { grid-template-columns: 1fr; }
+  .act-detail-photos.g2 .act-detail-photo,
+  .act-detail-photos.g3 .act-detail-photo { height: 200px; }
+  .mem-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; padding: 1.5rem 0.8rem; }
+  .mem-info { padding: 0.8rem; }
+  .mem-name { font-size: 0.75rem; }
+  .mem-role { font-size: 0.6rem; }
+  .mem-bio { font-size: 0.72rem; }
+  .auth-section { padding: 2.5rem 1rem; }
+  .auth-box { padding: 1.2rem; }
+  .auth-box-title { font-size: 0.95rem; }
+  .auth-box-sub { font-size: 0.75rem; }
+  .fg label { font-size: 0.62rem; }
+  .fg input, .fg textarea { font-size: 0.82rem; padding: 0.5rem 0.7rem; }
+  .btn-p { font-size: 0.7rem; padding: 0.55rem 1rem; }
+  .contrib-section { padding: 2rem 0.8rem; }
+  .contrib-title { font-size: 1rem; }
+  .contrib-avatar, .contrib-avatar-ph { width: 36px; height: 36px; font-size: 0.85rem; }
+  .contrib-name { font-size: 0.82rem; }
+  .contrib-meta { font-size: 0.68rem; }
+  .contrib-amount { font-size: 0.9rem; }
+  .membership-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)) !important; gap: 0.6rem; }
+  .mem-track-card { padding: 0.7rem; }
+  .mem-track-avatar, .mem-track-avatar-ph { width: 44px; height: 44px; font-size: 1rem; }
+  .mem-track-name { font-size: 0.72rem; }
+  .mem-track-status { font-size: 0.58rem; }
+  .mem-track-amount { font-size: 0.65rem; }
+  .upload-btn { font-size: 0.7rem; padding: 0.5rem 0.8rem; }
+  .notice { font-size: 0.78rem; padding: 0.6rem 0.8rem; }
+  .alist { max-height: 200px; }
+  .arow { padding: 0.5rem 0.6rem; flex-wrap: wrap; gap: 0.4rem; }
+  .arow-name { font-size: 0.78rem; }
+  .arow-sub { font-size: 0.65rem; }
+  .btn-sm { font-size: 0.6rem; padding: 0.18rem 0.45rem; }
+  .btn-add { font-size: 0.62rem; padding: 0.4rem 0.8rem; }
+  .back-to-top { width: 38px; height: 38px; font-size: 1rem; bottom: 1rem; left: 1rem; }
+  .toast { font-size: 0.78rem; padding: 0.6rem 1rem; max-width: 260px; top: 1rem; right: 1rem; }
+  /* Hero on phone */
+  .hero { height: 80vh; }
+  .hero-bars::before, .hero-bars::after { height: 30px; }
+  .hero-content { padding: 0 1rem; }
+  .hero-sub { font-size: 0.85rem; letter-spacing: 0.15em; }
+  .hero-rule { height: 32px; }
+  /* Carousel */
+  .carousel-section { padding: 2rem 0; }
+  .carousel-wrap { padding: 0 0.8rem; }
+  .mem-carousel-card { min-width: 130px; }
+  /* Founders */
+  .founders-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.8rem !important; }
+  .founders-wrap { padding: 0 0.8rem; }
+  /* Caisse */
+  .caisse-hero { padding: 3rem 0.8rem 2rem; }
+  .add-fund-btn { width: 42px; height: 42px; font-size: 1.3rem; bottom: 4.5rem; right: 1rem; }
+  /* Lightbox */
+  .lightbox img { max-width: 95vw; max-height: 80vh; }
+  .lightbox-inner { gap: 0.3rem; }
+  .lb-btn { width: 34px; height: 34px; font-size: 1rem; }
+}
 .members-section{padding:4rem 2rem;}
 .members-section-title{font-family:"Cinzel",serif;font-size:1.5rem;color:var(--teal-dark);margin-bottom:.5rem;}
 .members-section-sub{font-family:"Cormorant Garamond",serif;font-size:1rem;color:#888;margin-bottom:2rem;}
@@ -320,7 +431,7 @@ footer { background: var(--black); padding: 3rem 2rem; text-align: center; borde
 .notice{background:rgba(201,168,76,.1);border-left:3px solid var(--gold);padding:.8rem 1rem;font-size:.85rem;color:#6a5800;border-radius:0 2px 2px 0;margin-bottom:1rem;}
 .fok{color:#2e7d32;font-size:.78rem;margin-top:.35rem;display:none;}
 .off{background:#f5f0e8;}
-@media(max-width:768px){.auth-grid{grid-template-columns:1fr;}}
+/* auth-grid responsive handled in main media query */
 
 /* ── Accessibility & Polish ── */
 *:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
@@ -334,16 +445,7 @@ footer { background: var(--black); padding: 3rem 2rem; text-align: center; borde
 .back-to-top.visible{display:flex;}
 .back-to-top:hover{background:var(--teal-light);transform:translateY(-2px);}
 
-/* ── Better mobile nav ── */
-@media(max-width:700px){
-  .nav-links{gap:.5rem;}
-  .nav-links a{font-size:.6rem;letter-spacing:.08em;}
-  .btn-admin,.btn-member-nav{font-size:.58rem;padding:.3rem .5rem;}
-  .fund-grid{grid-template-columns:1fr!important;padding:1.5rem 1rem!important;}
-  .acts-grid{grid-template-columns:1fr!important;padding:2rem 1rem!important;}
-  .auth-grid{grid-template-columns:1fr!important;}
-  .membership-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))!important;}
-}
+/* (mobile rules consolidated above) */
 
 /* ── Smooth scroll ── */
 html{scroll-behavior:smooth;}
@@ -358,3 +460,21 @@ html{scroll-behavior:smooth;}
 
 /* ── Better hover on cards ── */
 .fund-card,.act-card,.mem-carousel-card{transition:transform .3s,box-shadow .3s;}
+
+/* ── Touch-friendly tap targets ── */
+@media(pointer:coarse){
+  .btn-p{min-height:44px;display:flex;align-items:center;justify-content:center;}
+  .btn-sm{min-height:32px;padding:.3rem .7rem;}
+  .btn-add{min-height:40px;}
+  .tab{min-height:40px;}
+  .nav-links a{min-height:36px;display:flex;align-items:center;}
+  .fund-card{cursor:default;-webkit-tap-highlight-color:transparent;}
+  .act-card{cursor:default;-webkit-tap-highlight-color:transparent;}
+}
+
+/* ── Add fund FAB (caisse page) ── */
+.add-fund-btn{position:fixed;bottom:5rem;right:1.8rem;z-index:800;width:50px;height:50px;
+  border-radius:50%;background:var(--gold);color:var(--teal-dark);border:none;
+  font-size:1.6rem;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.3);
+  display:none;align-items:center;justify-content:center;transition:all .3s;}
+.add-fund-btn:hover{transform:scale(1.1);background:var(--cream);}
