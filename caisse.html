@@ -203,7 +203,7 @@
   </div>
 </div>
 
-<script src="data.js"></script>
+<script src="data.js?v=2"></script>
 <script>
 document.getElementById("pw-input").addEventListener("keydown",function(e){if(e.key==="Enter")doAdminLogin();});
 
@@ -255,6 +255,7 @@ function submitContrib(){
 
 function renderFunds(){
   var funds=getFunds();var el=document.getElementById("funds-grid");
+  if(!el)return;
   var approved=getContribs().filter(function(c){return c.status==="approved";});
   var m=curMember();
   if(!funds.length){
