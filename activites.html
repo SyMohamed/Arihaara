@@ -298,7 +298,7 @@ function renderActs(){
     if(photos.length)html+='<div class="act-card-count">'+ photos.length +' photo'+(photos.length>1?"s":"")+'</div>';
     html+='</div></div>';
     if(a.desc){html+='<div class="act-card-body"><div class="act-card-desc">'+ a.desc +'</div></div>';}
-    if(photos.length){html+='<div class="act-mosaic '+ mc '">'+ mosaicHtml +'</div>';}
+    if(photos.length){html+='<div class="act-mosaic '+ mc +'">'+ mosaicHtml +'</div>';}
     html+='</div>';
   }
   el.innerHTML=html;
