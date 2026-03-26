@@ -329,6 +329,36 @@ function showProof(id){
   var c=getContribs();for(var i=0;i<c.length;i++){if(c[i].id===id&&c[i].proof){var el=document.getElementById("proof-img");if(el){el.src=c[i].proof;openOv("ov-proof");}return;}}
 }
 
+/* ── CSV EXPORT ───────────────────────────────────────── */
+function exportContribsCSV(){
+  var contribs=getContribs().filter(function(c){return c.status==="approved";});
+  if(!contribs.length){alert("Aucune contribution approuvee a exporter.");return;}
+  var funds=getFunds();
+  var fundMap={};
+  for(var i=0;i<funds.length;i++)fundMap[funds[i].id]=funds[i].name;
+  /* group by fund */
+  var rows=[];
+  rows.push(["Membre","Fonds / Type de contribution","Montant (MRU)","Date","Statut"]);
+  for(var j=0;j<contribs.length;j++){
+    var c=contribs[j];
+    rows.push([
+      '"'+c.memberName.replace(/"/g,'""')+'"',
+      '"'+(c.fundName||fundMap[c.fundId]||"").replace(/"/g,'""')+'"',
+      c.amount,
+      '"'+c.date+'"',
+      c.status==="approved"?"Approuvee":"En attente"
+    ]);
+  }
+  var csv="\uFEFF";/* BOM for Excel */
+  for(var k=0;k<rows.length;k++)csv+=rows[k].join(";")+"\r\n";
+  var blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download="contributions_arihaara.csv";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 /* ── OPEN ADMIN PANEL ─────────────────────────────────── */
 function openAdminPanel(){
   renderAdminFounders();renderAdminMembers();renderActAlist();
