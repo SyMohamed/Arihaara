@@ -1,53 +1,71 @@
 /* ============================================================
    data.js  -  Ari-Haara shared data engine
-   Firebase Firestore + localStorage cache hybrid
+   Firebase Realtime Database + localStorage cache hybrid
    ============================================================ */
 
-/* ── FIRESTORE SETUP ── */
-var db=null;
-var FS_MAP={
+/* ── FIREBASE REALTIME DB ── */
+var RTDB_URL="https://arihaara-default-rtdb.europe-west1.firebasedatabase.app";
+var DB_MAP={
   "ah_founders":"founders","ah_members":"members","ah_acts":"activities",
   "ah_funds":"funds","ah_contribs":"contributions",
   "ah_slides_rm":"slides_removed","ah_slides_ex":"slides_extra"
 };
-function firestoreSave(localKey,data){
-  if(!db)return;
-  var col=FS_MAP[localKey];if(!col)return;
-  db.collection(col).doc("data").set({items:data,updated:new Date().toISOString()})
-    .then(function(){console.log("Firestore saved:",col);})
-    .catch(function(e){console.error("Firestore save error:",col,e);});
+
+/* Save to Firebase RTDB via REST API */
+function fbSave(localKey,data){
+  var path=DB_MAP[localKey];if(!path)return;
+  var xhr=new XMLHttpRequest();
+  xhr.open("PUT",RTDB_URL+"/"+path+".json",true);
+  xhr.setRequestHeader("Content-Type","application/json");
+  xhr.onload=function(){
+    if(xhr.status>=200&&xhr.status<300){console.log("Firebase saved:",path);}
+    else{console.error("Firebase save error:",path,xhr.status);}
+  };
+  xhr.onerror=function(){console.error("Firebase network error:",path);};
+  xhr.send(JSON.stringify(data));
 }
 
-/* Push ALL local data to Firestore (first-time migration) */
-function pushAllToFirestore(){
-  if(!db)return;
-  var keys=Object.keys(FS_MAP);
+/* Load from Firebase RTDB via REST API */
+function fbLoad(localKey,callback){
+  var path=DB_MAP[localKey];if(!path){callback(null);return;}
+  var xhr=new XMLHttpRequest();
+  xhr.open("GET",RTDB_URL+"/"+path+".json",true);
+  xhr.onload=function(){
+    if(xhr.status>=200&&xhr.status<300){
+      try{var d=JSON.parse(xhr.responseText);callback(d);}
+      catch(e){callback(null);}
+    } else {callback(null);}
+  };
+  xhr.onerror=function(){callback(null);};
+  xhr.send();
+}
+
+/* Push ALL local data to Firebase (first-time migration) */
+function pushAllToFirebase(){
+  var keys=Object.keys(DB_MAP);
   keys.forEach(function(localKey){
     var data=ahLoad(localKey,null);
-    if(data!==null){
-      firestoreSave(localKey,data);
-    }
+    if(data!==null){fbSave(localKey,data);}
   });
-  console.log("All local data pushed to Firestore!");
-  if(typeof showToast==="function")showToast("Donnees synchronisees !");
+  console.log("All local data pushed to Firebase!");
+  if(typeof showToast==="function")showToast("Donnees synchronisees vers le cloud !");
 }
 
-function syncFromFirestore(){
-  if(!db)return;
-  var keys=Object.keys(FS_MAP);
+/* Sync from Firebase on page load */
+function syncFromFirebase(){
+  var keys=Object.keys(DB_MAP);
   var loaded=0;
   var gotAny=false;
   keys.forEach(function(localKey){
-    var col=FS_MAP[localKey];
-    db.collection(col).doc("data").get().then(function(doc){
-      if(doc.exists&&doc.data()&&doc.data().items){
-        try{localStorage.setItem(localKey,JSON.stringify(doc.data().items));}catch(e){}
+    fbLoad(localKey,function(data){
+      if(data!==null){
+        try{localStorage.setItem(localKey,JSON.stringify(data));}catch(e){}
         gotAny=true;
       }
       loaded++;
       if(loaded===keys.length){
         if(gotAny){
-          /* re-render everything after sync */
+          /* re-render everything */
           if(typeof renderFunds==="function")renderFunds();
           if(typeof renderActs==="function")renderActs();
           if(typeof renderAllMembers==="function")renderAllMembers();
@@ -57,29 +75,19 @@ function syncFromFirestore(){
           if(typeof updateTotal==="function")updateTotal();
           if(typeof renderMembershipTrackers==="function")renderMembershipTrackers();
           if(typeof buildSlides==="function")buildSlides();
-          console.log("Firestore sync complete - data loaded");
+          console.log("Firebase sync complete - data loaded");
         } else {
-          console.log("Firestore empty - pushing local data up");
-          pushAllToFirestore();
+          /* Firebase is empty - push local data up */
+          console.log("Firebase empty - pushing local data up");
+          pushAllToFirebase();
         }
       }
-    }).catch(function(e){loaded++;console.warn("Firestore load error:",col,e);});
+    });
   });
 }
 
-function initFirestore(){
-  try{
-    if(typeof firebase!=="undefined"&&firebase.firestore){
-      db=firebase.firestore();
-      console.log("Firestore connected!");
-      syncFromFirestore();
-    } else {
-      console.warn("Firebase SDK not loaded");
-    }
-  }catch(e){console.warn("Firestore init failed:",e);}
-}
-
-window.addEventListener("load",function(){setTimeout(initFirestore,500);});
+/* Init on page load */
+window.addEventListener("load",function(){setTimeout(syncFromFirebase,300);});
 
 /* ── LOCAL STORAGE (cache layer) ── */
 function ahLoad(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
@@ -130,19 +138,19 @@ var DEFAULT_FOUNDERS=[
 ];
 
 function getFounders(){var s=ahLoad("ah_founders",null);return s!==null?s:DEFAULT_FOUNDERS;}
-function saveFounders(v){ahSave("ah_founders",v);firestoreSave("ah_founders",v);}
+function saveFounders(v){ahSave("ah_founders",v);fbSave("ah_founders",v);}
 function getMembers(){return ahLoad("ah_members",[]);}
-function saveMembers(v){ahSave("ah_members",v);firestoreSave("ah_members",v);}
+function saveMembers(v){ahSave("ah_members",v);fbSave("ah_members",v);}
 function getActs(){return ahLoad("ah_acts",[]);}
-function saveActs(v){var r=ahSave("ah_acts",v);firestoreSave("ah_acts",v);return r;}
+function saveActs(v){var r=ahSave("ah_acts",v);fbSave("ah_acts",v);return r;}
 function getFunds(){return ahLoad("ah_funds",[]);}
-function saveFunds(v){var r=ahSave("ah_funds",v);firestoreSave("ah_funds",v);return r;}
+function saveFunds(v){var r=ahSave("ah_funds",v);fbSave("ah_funds",v);return r;}
 function getContribs(){return ahLoad("ah_contribs",[]);}
-function saveContribs(v){ahSave("ah_contribs",v);firestoreSave("ah_contribs",v);}
+function saveContribs(v){ahSave("ah_contribs",v);fbSave("ah_contribs",v);}
 function getSlidesRemoved(){return ahLoad("ah_slides_rm",[]);}
 function getSlidesExtra(){return ahLoad("ah_slides_ex",[]);}
-function saveSlidesRemoved(v){ahSave("ah_slides_rm",v);firestoreSave("ah_slides_rm",v);}
-function saveSlidesExtra(v){ahSave("ah_slides_ex",v);firestoreSave("ah_slides_ex",v);}
+function saveSlidesRemoved(v){ahSave("ah_slides_rm",v);fbSave("ah_slides_rm",v);}
+function saveSlidesExtra(v){ahSave("ah_slides_ex",v);fbSave("ah_slides_ex",v);}
 
 /* SESSION */
 var ADMIN_PASS="arihaara2024";
