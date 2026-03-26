@@ -111,6 +111,7 @@
         <button class="tab" onclick="swTab(3)">Membres</button>
         <button class="tab" onclick="swTab(4)">Fonds</button>
         <button class="tab" onclick="swTab(5)">Contributions</button>
+        <button class="tab" onclick="swTab(6)">Donnees</button>
       </div>
       <div class="tpanel active" id="tp-0">
         <p style="font-size:.8rem;color:#888;margin-bottom:.8rem">Photos du diaporama (noir &amp; blanc automatique).</p>
@@ -150,6 +151,22 @@
       <div class="tpanel" id="tp-5">
         <div class="notice">Approuvez les contributions soumises par les membres.</div>
         <div class="alist" id="contribs-alist"></div>
+        <hr style="margin:1rem 0;border:none;border-top:1px solid #eee"/>
+        <button class="btn-p danger full" onclick="doAdminLogout()">D&eacute;connexion</button>
+      </div>
+      <div class="tpanel" id="tp-6">
+        <div class="notice" style="margin-bottom:1.5rem">
+          <strong>Synchronisation des donnees</strong><br/>
+          Les donnees (membres, activites, fonds) sont stockees localement dans chaque navigateur.
+          Pour que les memes donnees apparaissent sur tous les appareils :<br/>
+          1. <strong>Exportez</strong> les donnees depuis cet appareil<br/>
+          2. <strong>Importez</strong> le fichier sur chaque autre appareil
+        </div>
+        <button class="btn-p full" onclick="exportAllData()" style="margin-bottom:.6rem;background:var(--gold);color:var(--black)">&#128190; Exporter toutes les donnees (JSON)</button>
+        <button class="btn-p full" onclick="importAllData()" style="margin-bottom:.6rem">&#128194; Importer des donnees (JSON)</button>
+        <button class="btn-p full" onclick="exportContribsCSV()" style="margin-bottom:.6rem;background:var(--teal-light);color:var(--cream)">&#128196; Exporter contributions (CSV)</button>
+        <hr style="margin:1rem 0;border:none;border-top:1px solid #eee"/>
+        <button class="btn-p full" onclick="generateDefaultsCode()" style="margin-bottom:.6rem;background:#555;color:#fff">&#9881; Generer fichier defaults (developpeur)</button>
         <hr style="margin:1rem 0;border:none;border-top:1px solid #eee"/>
         <button class="btn-p danger full" onclick="doAdminLogout()">D&eacute;connexion</button>
       </div>

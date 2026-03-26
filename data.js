@@ -585,6 +585,87 @@ function showToast(msg,type){
   setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},400);},3000);
 }
 
+/* ── DATA EXPORT / IMPORT (admin only) ── */
+function exportAllData(){
+  var data={
+    founders:getFounders(),
+    members:getMembers(),
+    acts:getActs(),
+    funds:getFunds(),
+    contribs:getContribs(),
+    slides_rm:getSlidesRemoved(),
+    slides_ex:getSlidesExtra(),
+    exportDate:new Date().toISOString()
+  };
+  /* strip large photos from export to keep file small */
+  var json=JSON.stringify(data,null,2);
+  var blob=new Blob([json],{type:"application/json"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download="arihaara_data_"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Donnees exportees !");
+}
+
+function importAllData(){
+  var input=document.createElement("input");
+  input.type="file";input.accept=".json";
+  input.onchange=function(){
+    var file=input.files[0];if(!file)return;
+    var r=new FileReader();
+    r.onload=function(e){
+      try{
+        var data=JSON.parse(e.target.result);
+        if(!data.founders&&!data.members&&!data.acts){alert("Fichier invalide.");return;}
+        if(!confirm("Cela remplacera toutes les donnees actuelles. Continuer ?"))return;
+        if(data.founders)ahSave("ah_founders",data.founders);
+        if(data.members)ahSave("ah_members",data.members);
+        if(data.acts)ahSave("ah_acts",data.acts);
+        if(data.funds)ahSave("ah_funds",data.funds);
+        if(data.contribs)ahSave("ah_contribs",data.contribs);
+        if(data.slides_rm)ahSave("ah_slides_rm",data.slides_rm);
+        if(data.slides_ex)ahSave("ah_slides_ex",data.slides_ex);
+        showToast("Donnees importees ! Rechargement...");
+        setTimeout(function(){window.location.reload();},1500);
+      }catch(err){alert("Erreur de lecture du fichier.");}
+    };
+    r.readAsText(file);
+  };
+  input.click();
+}
+
+/* ── Generate data.js defaults from current state (admin tool) ── */
+function generateDefaultsCode(){
+  var data={
+    founders:getFounders(),
+    members:getMembers(),
+    acts:getActs(),
+    funds:getFunds(),
+    contribs:getContribs().filter(function(c){return c.status==="approved";}),
+    slides_ex:getSlidesExtra()
+  };
+  /* Remove photo data to keep code small */
+  var clean=JSON.parse(JSON.stringify(data));
+  var code="/* AUTO-GENERATED DEFAULT DATA - paste into data.js */\n";
+  code+="var SITE_DEFAULTS="+JSON.stringify(clean)+";\n";
+  code+="function loadDefaults(){";
+  code+="if(!localStorage.getItem('ah_founders'))ahSave('ah_founders',SITE_DEFAULTS.founders);";
+  code+="if(!localStorage.getItem('ah_members'))ahSave('ah_members',SITE_DEFAULTS.members);";
+  code+="if(!localStorage.getItem('ah_acts'))ahSave('ah_acts',SITE_DEFAULTS.acts);";
+  code+="if(!localStorage.getItem('ah_funds'))ahSave('ah_funds',SITE_DEFAULTS.funds);";
+  code+="if(!localStorage.getItem('ah_contribs'))ahSave('ah_contribs',SITE_DEFAULTS.contribs);";
+  code+="if(!localStorage.getItem('ah_slides_ex'))ahSave('ah_slides_ex',SITE_DEFAULTS.slides_ex);";
+  code+="}";
+  var blob=new Blob([code],{type:"text/javascript"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download="site-defaults.js";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Fichier defaults genere !");
+}
+
 /* ── OPEN ADMIN PANEL ─────────────────────────────────── */
 function openAdminPanel(){
   syncAllFoundersToMembers();
