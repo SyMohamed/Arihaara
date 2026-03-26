@@ -283,6 +283,8 @@
     setTimeout(function(){if(all[prev])all[prev].classList.remove("exiting");},2500);
   }
   buildSlides();
+window.addEventListener("scroll",function(){var b=document.getElementById("back-to-top");if(b)b.classList.toggle("visible",window.scrollY>300);});
 </script>
+<button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8593;</button>
 </body>
 </html>

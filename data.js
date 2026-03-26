@@ -312,8 +312,14 @@ function saveFund(){
   }catch(e){
     alert("Erreur: stockage plein.");return;
   }
-  /* reload page so funds grid re-renders from fresh localStorage data */
-  window.location.reload();
+  setVal("fund-name","");setVal("fund-desc","");setVal("fund-goal","");setVal("fund-icon","");
+  var typeEl2=document.getElementById("fund-type");if(typeEl2)typeEl2.value="regular";
+  closeOv("ov-fund");closeOv("ov-admin");
+  renderAdminFunds();
+  if(typeof renderFunds==="function")renderFunds();
+  if(typeof updateTotal==="function")updateTotal();
+  if(typeof renderMembershipTrackers==="function")renderMembershipTrackers();
+  showToast("Fonds cree avec succes !");
 }
 function deleteFund(id){
   if(!confirm("Supprimer ce fonds?"))return;
@@ -395,6 +401,14 @@ function exportContribsCSV(){
   a.href=url;a.download="contributions_arihaara.csv";
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/* ── TOAST NOTIFICATIONS ── */
+function showToast(msg,type){
+  var t=document.createElement("div");t.className="toast "+(type||"success");
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(function(){t.classList.add("show");},50);
+  setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},400);},3000);
 }
 
 /* ── OPEN ADMIN PANEL ─────────────────────────────────── */
