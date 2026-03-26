@@ -1,6 +1,58 @@
 /* ============================================================
    data.js  -  Ari-Haara shared data engine
+   Firebase Firestore + localStorage cache hybrid
    ============================================================ */
+
+/* ── FIRESTORE SETUP ── */
+var db=null;
+var FS_MAP={
+  "ah_founders":"founders","ah_members":"members","ah_acts":"activities",
+  "ah_funds":"funds","ah_contribs":"contributions",
+  "ah_slides_rm":"slides_removed","ah_slides_ex":"slides_extra"
+};
+function initFirestore(){
+  try{
+    if(typeof firebase!=="undefined"&&firebase.firestore){
+      db=firebase.firestore();
+      syncFromFirestore();
+    }
+  }catch(e){console.warn("Firestore init failed:",e);}
+}
+function firestoreSave(localKey,data){
+  if(!db)return;
+  var col=FS_MAP[localKey];if(!col)return;
+  db.collection(col).doc("data").set({items:data,updated:new Date().toISOString()})
+    .catch(function(e){console.error("Firestore save error:",col,e);});
+}
+function syncFromFirestore(){
+  if(!db)return;
+  var keys=Object.keys(FS_MAP);
+  var loaded=0;
+  keys.forEach(function(localKey){
+    var col=FS_MAP[localKey];
+    db.collection(col).doc("data").get().then(function(doc){
+      if(doc.exists&&doc.data().items){
+        try{localStorage.setItem(localKey,JSON.stringify(doc.data().items));}catch(e){}
+      }
+      loaded++;
+      if(loaded===keys.length){
+        /* re-render everything after sync */
+        if(typeof renderFunds==="function")renderFunds();
+        if(typeof renderActs==="function")renderActs();
+        if(typeof renderAllMembers==="function")renderAllMembers();
+        if(typeof renderFounders==="function")renderFounders();
+        if(typeof renderMyContribs==="function")renderMyContribs();
+        if(typeof renderAllContribs==="function")renderAllContribs();
+        if(typeof updateTotal==="function")updateTotal();
+        if(typeof renderMembershipTrackers==="function")renderMembershipTrackers();
+        if(typeof buildSlides==="function")buildSlides();
+      }
+    }).catch(function(e){loaded++;console.warn("Firestore load error:",col,e);});
+  });
+}
+window.addEventListener("load",function(){setTimeout(initFirestore,300);});
+
+/* ── LOCAL STORAGE (cache layer) ── */
 function ahLoad(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
 function ahSave(k,v){
   try{localStorage.setItem(k,JSON.stringify(v));return true;}
@@ -49,19 +101,19 @@ var DEFAULT_FOUNDERS=[
 ];
 
 function getFounders(){var s=ahLoad("ah_founders",null);return s!==null?s:DEFAULT_FOUNDERS;}
-function saveFounders(v){ahSave("ah_founders",v);}
+function saveFounders(v){ahSave("ah_founders",v);firestoreSave("ah_founders",v);}
 function getMembers(){return ahLoad("ah_members",[]);}
-function saveMembers(v){ahSave("ah_members",v);}
+function saveMembers(v){ahSave("ah_members",v);firestoreSave("ah_members",v);}
 function getActs(){return ahLoad("ah_acts",[]);}
-function saveActs(v){return ahSave("ah_acts",v);}
+function saveActs(v){var r=ahSave("ah_acts",v);firestoreSave("ah_acts",v);return r;}
 function getFunds(){return ahLoad("ah_funds",[]);}
-function saveFunds(v){return ahSave("ah_funds",v);}
+function saveFunds(v){var r=ahSave("ah_funds",v);firestoreSave("ah_funds",v);return r;}
 function getContribs(){return ahLoad("ah_contribs",[]);}
-function saveContribs(v){ahSave("ah_contribs",v);}
+function saveContribs(v){ahSave("ah_contribs",v);firestoreSave("ah_contribs",v);}
 function getSlidesRemoved(){return ahLoad("ah_slides_rm",[]);}
 function getSlidesExtra(){return ahLoad("ah_slides_ex",[]);}
-function saveSlidesRemoved(v){ahSave("ah_slides_rm",v);}
-function saveSlidesExtra(v){ahSave("ah_slides_ex",v);}
+function saveSlidesRemoved(v){ahSave("ah_slides_rm",v);firestoreSave("ah_slides_rm",v);}
+function saveSlidesExtra(v){ahSave("ah_slides_ex",v);firestoreSave("ah_slides_ex",v);}
 
 /* SESSION */
 var ADMIN_PASS="arihaara2024";
@@ -479,11 +531,7 @@ function saveFund(){
   var f={id:"fund_"+Date.now(),name:name,desc:desc,icon:icon,goal:goal,type:ftype};
   var funds=getFunds();
   funds.push(f);
-  try{
-    localStorage.setItem("ah_funds",JSON.stringify(funds));
-  }catch(e){
-    alert("Erreur: stockage plein.");return;
-  }
+  if(!saveFunds(funds)){alert("Erreur: stockage plein.");return;}
   setVal("fund-name","");setVal("fund-desc","");setVal("fund-goal","");setVal("fund-icon","");
   var typeEl2=document.getElementById("fund-type");if(typeEl2)typeEl2.value="regular";
   closeOv("ov-fund");closeOv("ov-admin");
