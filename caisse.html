@@ -322,13 +322,11 @@
 var _proofData="";
 function handleProofUpload(input){
   var file=input.files[0];if(!file)return;
-  var r=new FileReader();
-  r.onload=function(e){
-    _proofData=e.target.result;
+  compressImage(file,400,400,0.5,function(data){
+    _proofData=data;
     var prev=document.getElementById("proof-preview");
     if(prev)prev.innerHTML='<img src="'+_proofData+'"/>';
-  };
-  r.readAsDataURL(file);
+  });
 }
 
 /* ── Open contribution modal ── */

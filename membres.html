@@ -347,14 +347,12 @@ function renderAllMembers(){
 var _signupPhotoData="";
 function handleSignupPhoto(input){
   var file=input.files[0];if(!file)return;
-  var r=new FileReader();
-  r.onload=function(e){
-    _signupPhotoData=e.target.result;
+  compressImage(file,250,250,0.5,function(data){
+    _signupPhotoData=data;
     var prev=document.getElementById("signup-photo-prev");
     var wrap=document.getElementById("signup-photo-wrap");
     if(prev){prev.src=_signupPhotoData;wrap.style.display="block";}
-  };
-  r.readAsDataURL(file);
+  });
 }
 
 function doMemberSignup(){

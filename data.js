@@ -43,6 +43,29 @@ function closeOv(id){document.getElementById(id).classList.remove("open");}
 window.addEventListener("scroll",function(){var n=document.getElementById("main-nav");if(n)n.classList.toggle("scrolled",window.scrollY>40);});
 window.addEventListener("click",function(e){if(e.target&&e.target.classList&&e.target.classList.contains("overlay"))e.target.classList.remove("open");});
 
+/* IMAGE COMPRESSION - resizes images to save localStorage space */
+function compressImage(file,maxW,maxH,quality,cb){
+  maxW=maxW||600;maxH=maxH||600;quality=quality||0.6;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width;var h=img.height;
+      if(w>maxW||h>maxH){
+        var ratio=Math.min(maxW/w,maxH/h);
+        w=Math.round(w*ratio);h=Math.round(h*ratio);
+      }
+      var canvas=document.createElement("canvas");
+      canvas.width=w;canvas.height=h;
+      var ctx=canvas.getContext("2d");
+      ctx.drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL("image/jpeg",quality));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 /* ADMIN AUTH */
 function openLoginOrPanel(){if(_isAdmin){openAdminPanel();}else{openAdminLogin();}}
 function openAdminLogin(){
@@ -94,13 +117,11 @@ function openFounderForm(id){
 }
 function handleFounderPhoto(input){
   var file=input.files[0];if(!file)return;
-  var r=new FileReader();
-  r.onload=function(e){
-    _founderPhotoData=e.target.result;
+  compressImage(file,300,300,0.5,function(data){
+    _founderPhotoData=data;
     var prev=document.getElementById("fn-photo-preview");var wrap=document.getElementById("fn-photo-preview-wrap");
     if(prev){prev.src=_founderPhotoData;if(wrap)wrap.style.display="block";}
-  };
-  r.readAsDataURL(file);
+  });
 }
 function saveFounder(){
   var name=getVal("fn-name");if(!name){alert("Nom requis.");return;}
@@ -198,16 +219,13 @@ function handleActPhotos(input){
   var remaining=files.length;
   for(var i=0;i<files.length;i++){
     (function(file){
-      var r=new FileReader();
-      r.onload=function(e){
-        _actPhotos.push(e.target.result);
+      compressImage(file,800,800,0.55,function(data){
+        _actPhotos.push(data);
         remaining--;
         if(remaining===0)renderActPhotosPreview();
-      };
-      r.readAsDataURL(file);
+      });
     })(files[i]);
   }
-  /* reset so same files can be re-selected */
   input.value="";
 }
 
