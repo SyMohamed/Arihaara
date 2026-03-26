@@ -22,7 +22,7 @@ function saveMembers(v){ahSave("ah_members",v);}
 function getActs(){return ahLoad("ah_acts",[]);}
 function saveActs(v){return ahSave("ah_acts",v);}
 function getFunds(){return ahLoad("ah_funds",[]);}
-function saveFunds(v){ahSave("ah_funds",v);}
+function saveFunds(v){return ahSave("ah_funds",v);}
 function getContribs(){return ahLoad("ah_contribs",[]);}
 function saveContribs(v){ahSave("ah_contribs",v);}
 function getSlidesRemoved(){return ahLoad("ah_slides_rm",[]);}
