@@ -5,6 +5,30 @@
 <title>Ari-Haara - Caisse Solidaire</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="style.css"/>
+<style>
+.emoji-btn{background:rgba(13,74,71,.06);border:1px solid #e0dcd0;border-radius:6px;
+  width:38px;height:38px;font-size:1.3rem;cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;}
+.emoji-btn:hover{background:rgba(13,74,71,.15);transform:scale(1.15);}
+
+/* Membership tracker */
+.membership-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-top:1rem;}
+.mem-track-card{background:var(--white);border-radius:6px;padding:1rem;text-align:center;
+  box-shadow:0 2px 12px rgba(13,74,71,.06);position:relative;overflow:hidden;}
+.mem-track-card.paid{border-bottom:3px solid var(--teal);}
+.mem-track-card.unpaid{border-bottom:3px solid #e0c080;opacity:.7;}
+.mem-track-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;
+  filter:grayscale(100%);margin:0 auto .6rem;display:block;}
+.mem-track-avatar-ph{width:56px;height:56px;border-radius:50%;
+  background:var(--teal-dark);color:var(--cream);display:flex;align-items:center;
+  justify-content:center;font-size:1.3rem;margin:0 auto .6rem;}
+.mem-track-name{font-family:"Cinzel",serif;font-size:.82rem;color:var(--teal-dark);margin-bottom:.3rem;}
+.mem-track-status{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .6rem;
+  border-radius:10px;display:inline-block;}
+.mem-track-status.paid{background:rgba(13,74,71,.1);color:var(--teal);}
+.mem-track-status.unpaid{background:rgba(201,168,76,.15);color:#a08030;}
+.mem-track-amount{font-size:.75rem;color:#888;margin-top:.3rem;}
+</style>
 </head>
 <body class="page-top">
 
@@ -46,6 +70,13 @@
   <div class="contrib-wrap">
     <div class="contrib-title">Mes Contributions</div>
     <div class="contrib-list" id="my-contribs"></div>
+  </div>
+</div>
+
+<div class="contrib-section" id="membership-section" style="display:none;background:#f7f5ef">
+  <div class="contrib-wrap">
+    <div class="contrib-title">&#128101; Suivi des Adh&eacute;sions</div>
+    <div id="membership-content"></div>
   </div>
 </div>
 
@@ -111,8 +142,33 @@
   <div class="modal">
     <div class="mhd"><h3>Nouveau Fonds</h3><button class="mclose" onclick="closeOv('ov-fund')">&#215;</button></div>
     <div class="mbd">
+      <div class="fg"><label>Type de collecte</label>
+        <select id="fund-type" style="width:100%;padding:.6rem;border:1px solid #ddd;border-radius:3px;font-size:.9rem;font-family:Lato,sans-serif">
+          <option value="regular">Cagnotte / Projet</option>
+          <option value="membership">Cotisation annuelle / Adh&eacute;sion</option>
+        </select>
+      </div>
       <div class="fg"><label>Nom du fonds</label><input type="text" id="fund-name" placeholder="ex: Construction ecole"/></div>
-      <div class="fg"><label>Icone (emoji)</label><input type="text" id="fund-icon" placeholder="ex: &#127979;" maxlength="4"/></div>
+      <div class="fg"><label>Icone (emoji)</label><input type="text" id="fund-icon" placeholder="Cliquez ci-dessous" maxlength="4"/>
+        <div style="margin-top:.5rem;display:flex;flex-wrap:wrap;gap:6px" id="emoji-picks">
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127979;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128176;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127982;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128138;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127793;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128170;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#9968;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128666;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127968;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128218;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#9978;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128587;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127775;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#10084;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#129309;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128591;</button>
+        </div>
+      </div>
       <div class="fg"><label>Description</label><textarea id="fund-desc" placeholder="Decrivez l objectif de ce fonds..."></textarea></div>
       <div class="fg"><label>Objectif (MRU)</label><input type="number" id="fund-goal" placeholder="ex: 1000000" min="1"/></div>
       <button class="btn-p full" onclick="saveFund()">Creer le fonds</button>
@@ -194,7 +250,7 @@ function submitContrib(){
   contribs.push({id:"c_"+Date.now(),memberId:m.id,memberName:m.name,memberPhoto:m.photo||"",fundId:fundId,fundName:fundName,amount:amount,proof:_proofData,status:"pending",date:new Date().toLocaleDateString("fr-FR")});
   saveContribs(contribs);
   document.getElementById("contrib-ok").style.display="block";
-  setTimeout(function(){closeOv("ov-contrib");renderFunds();renderMyContribs();renderAllContribs();updateTotal();},1800);
+  setTimeout(function(){closeOv("ov-contrib");renderFunds();renderMyContribs();renderAllContribs();updateTotal();renderMembershipTrackers();},1800);
 }
 
 function renderFunds(){
@@ -210,10 +266,10 @@ function renderFunds(){
     var f=funds[i];var raised=0;var cnt=0;
     for(var j=0;j<approved.length;j++){if(approved[j].fundId===f.id){raised+=approved[j].amount;cnt++;}}
     var pct=f.goal>0?Math.min(100,Math.round(raised/f.goal*100)):0;
-    html+='<div class="fund-card" onclick="openContribModal(''+f.id+'')">';
+    html+='<div class="fund-card" onclick="openContribModal(\''+f.id+'\')">';
     html+='<div class="fund-card-top"><div class="fund-icon">'+(f.icon||"&#128176;")+'</div>';
     html+='<div class="fund-name">'+f.name+'</div><div class="fund-desc">'+(f.desc||"")+'</div>';
-    html+='<div class="fund-stats"><div class="fund-raised">'+raised.toLocaleString("fr-FR")+' MRU</div><div class="fund-goal">Objectif: '+f.goal.toLocaleString("fr-FR")+' MRU</div></div>';
+    html+='<div class="fund-stats"><div class="fund-raised">'+raised.toLocaleString("fr-FR")+' MRU</div><div class="fund-goal">Objectif: '+(f.goal||0).toLocaleString("fr-FR")+' MRU</div></div>';
     html+='<div class="fund-bar-wrap"><div class="fund-bar" style="width:'+pct+'%"></div></div></div>';
     html+='<div class="fund-card-bottom"><div class="fund-contributors">'+cnt+' contribution'+(cnt!==1?"s":"")+" &bull; "+pct+'%</div>';
     if(m){html+='<div class="fund-btn">+ Contribuer</div>';}
@@ -221,6 +277,8 @@ function renderFunds(){
     html+='</div></div>';
   }
   el.innerHTML=html;
+  /* render membership trackers */
+  renderMembershipTrackers();
 }
 
 function updateTotal(){
@@ -263,10 +321,54 @@ function renderAllContribs(){
     else html+='<div class="contrib-avatar-ph">'+x.memberName[0]+'</div>';
     html+='<div class="contrib-info"><div class="contrib-name">'+x.memberName+'</div><div class="contrib-meta">'+x.fundName+' &bull; '+x.date+'</div></div>';
     html+='<div class="contrib-amount">'+x.amount.toLocaleString("fr-FR")+' MRU</div>';
-    if(x.proof)html+='<img class="proof-thumb" src="'+x.proof+'" onclick="showProof(''+x.id+'')" title="Voir justificatif"/>';
     html+='</div>';
   }
   el.innerHTML=html;
+}
+
+function renderMembershipTrackers(){
+  var el=document.getElementById("membership-section");if(!el)return;
+  var funds=getFunds().filter(function(f){return f.type==="membership";});
+  if(!funds.length){el.style.display="none";return;}
+  el.style.display="block";
+  var members=getMembers().filter(function(m){return m.status==="approved";});
+  var approved=getContribs().filter(function(c){return c.status==="approved";});
+  var html="";
+  for(var fi=0;fi<funds.length;fi++){
+    var f=funds[fi];
+    html+='<div style="margin-bottom:2.5rem">';
+    html+='<h3 style="font-family:Cinzel,serif;font-size:1.2rem;color:var(--teal-dark);margin-bottom:.3rem">'+(f.icon||"")+" "+f.name+'</h3>';
+    if(f.desc)html+='<p style="font-family:Cormorant Garamond,serif;font-size:.95rem;color:#888;margin-bottom:1rem">'+f.desc+'</p>';
+    /* count paid */
+    var paidMap={};var paidTotal=0;
+    for(var j=0;j<approved.length;j++){
+      if(approved[j].fundId===f.id){
+        if(!paidMap[approved[j].memberId])paidMap[approved[j].memberId]=0;
+        paidMap[approved[j].memberId]+=approved[j].amount;paidTotal+=approved[j].amount;
+      }
+    }
+    var paidCount=Object.keys(paidMap).length;
+    html+='<p style="font-size:.8rem;color:var(--teal);margin-bottom:.8rem">'+paidCount+' / '+members.length+' membres ont contribue &bull; '+paidTotal.toLocaleString("fr-FR")+' MRU collectes</p>';
+    html+='<div class="membership-grid">';
+    for(var mi=0;mi<members.length;mi++){
+      var mem=members[mi];
+      var paid=paidMap[mem.id]||0;
+      var isPaid=paid>0;
+      html+='<div class="mem-track-card '+(isPaid?"paid":"unpaid")+'">';
+      if(mem.photo)html+='<img class="mem-track-avatar" src="'+mem.photo+'" alt=""/>';
+      else html+='<div class="mem-track-avatar-ph">'+mem.name[0]+'</div>';
+      html+='<div class="mem-track-name">'+mem.name+'</div>';
+      if(isPaid){
+        html+='<span class="mem-track-status paid">&#10003; Paye</span>';
+        html+='<div class="mem-track-amount">'+paid.toLocaleString("fr-FR")+' MRU</div>';
+      } else {
+        html+='<span class="mem-track-status unpaid">En attente</span>';
+      }
+      html+='</div>';
+    }
+    html+='</div></div>';
+  }
+  document.getElementById("membership-content").innerHTML=html;
 }
 
 function showProof(id){
@@ -283,7 +385,7 @@ if(_m){
   if(_m.photo)aw.innerHTML='<img src="'+_m.photo+'" style="width:32px;height:32px;border-radius:50%;object-fit:cover;filter:grayscale(100%)"/>';
   else aw.innerHTML='<div style="width:32px;height:32px;border-radius:50%;background:rgba(232,213,160,.2);display:flex;align-items:center;justify-content:center;color:var(--cream);font-size:.9rem">'+_m.name[0]+'</div>';
 }
-renderFunds();renderMyContribs();renderAllContribs();updateTotal();
+renderFunds();renderMyContribs();renderAllContribs();updateTotal();renderMembershipTrackers();
 </script>
 </body>
 </html>

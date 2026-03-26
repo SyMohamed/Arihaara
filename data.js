@@ -285,19 +285,29 @@ function renderAdminFunds(){
   var h="";
   for(var i=0;i<funds.length;i++){
     var f=funds[i];
-    h+='<div class="arow"><div><div class="arow-name">'+(f.icon||"")+" "+f.name+'</div>';
-    h+='<div class="arow-sub">Objectif: '+f.goal+' MRU</div></div>';
+    h+='<div class="arow"><div><div class="arow-name">'+(f.icon||"")+" "+f.name+(f.type==="membership"?' <span style="font-size:.65rem;background:var(--cream-dark);color:var(--teal-dark);padding:1px 6px;border-radius:8px;margin-left:4px">Adhesion</span>':'')+'</div>';
+    h+='<div class="arow-sub">Objectif: '+(f.goal||0)+' MRU</div></div>';
     h+='<div><button class="btn-sm del" onclick="deleteFund(\''+f.id+'\')">Suppr.</button></div></div>';
   }
   el.innerHTML=h;
 }
-function openFundForm(){openOv("ov-fund");}
+function openFundForm(){
+  setVal("fund-name","");setVal("fund-desc","");setVal("fund-goal","");setVal("fund-icon","");
+  var typeEl=document.getElementById("fund-type");if(typeEl)typeEl.value="regular";
+  openOv("ov-fund");
+}
 function saveFund(){
   var name=getVal("fund-name");if(!name){alert("Nom requis.");return;}
-  var f={id:"fund_"+Date.now(),name:name,desc:getVal("fund-desc"),icon:getVal("fund-icon")||"&#128176;",goal:parseInt(getVal("fund-goal"))||0};
+  var typeEl=document.getElementById("fund-type");
+  var ftype=typeEl?typeEl.value:"regular";
+  var f={id:"fund_"+Date.now(),name:name,desc:getVal("fund-desc"),icon:getVal("fund-icon")||"&#128176;",goal:parseInt(getVal("fund-goal"))||0,type:ftype};
   var funds=getFunds();funds.push(f);saveFunds(funds);
   setVal("fund-name","");setVal("fund-desc","");setVal("fund-goal","");setVal("fund-icon","");
-  closeOv("ov-fund");renderAdminFunds();if(typeof renderFunds==="function")renderFunds();
+  closeOv("ov-fund");renderAdminFunds();
+  if(typeof renderFunds==="function")renderFunds();
+  if(typeof updateTotal==="function")updateTotal();
+  /* reopen admin to show updated list */
+  openAdminPanel();swTab(0);
 }
 function deleteFund(id){
   if(!confirm("Supprimer ce fonds?"))return;
@@ -313,16 +323,29 @@ function renderAdminContribs(){
   var h="";
   for(var i=0;i<pending.length;i++){
     var c=pending[i];
-    h+='<div class="arow"><div style="flex:1"><div class="arow-name">'+c.memberName+'</div>';
-    h+='<div class="arow-sub">'+c.fundName+' &bull; '+c.amount+' MRU &bull; '+c.date+'</div></div>';
-    if(c.proof)h+='<img class="proof-thumb" src="'+c.proof+'" onclick="showProof(\''+c.id+'\')" style="margin-right:.5rem"/>';
-    h+='<div><button class="btn-sm approve" onclick="approveContrib(\''+c.id+'\')">&#10003; Approuver</button>';
+    h+='<div class="arow" style="flex-wrap:wrap;gap:.5rem">';
+    h+='<div style="flex:1;min-width:140px"><div class="arow-name">'+c.memberName+'</div>';
+    h+='<div class="arow-sub">'+c.fundName+' &bull; '+c.date+'</div></div>';
+    h+='<div style="display:flex;align-items:center;gap:.4rem">';
+    h+='<input type="number" id="amt-'+c.id+'" value="'+c.amount+'" min="1" style="width:90px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;font-size:.82rem;text-align:right"/>';
+    h+='<span style="font-size:.75rem;color:#999">MRU</span></div>';
+    if(c.proof)h+='<img class="proof-thumb" src="'+c.proof+'" onclick="showProof(\''+c.id+'\')" style="margin-right:.3rem"/>';
+    h+='<div style="display:flex;gap:.3rem">';
+    h+='<button class="btn-sm approve" onclick="approveContrib(\''+c.id+'\')">&#10003; Approuver</button>';
     h+='<button class="btn-sm del" onclick="rejectContrib(\''+c.id+'\')">&#10007;</button></div></div>';
   }
   el.innerHTML=h;
 }
 function approveContrib(id){
-  var c=getContribs();for(var i=0;i<c.length;i++){if(c[i].id===id){c[i].status="approved";break;}}
+  var c=getContribs();
+  for(var i=0;i<c.length;i++){
+    if(c[i].id===id){
+      /* allow admin to modify amount */
+      var amtEl=document.getElementById("amt-"+id);
+      if(amtEl){var newAmt=parseInt(amtEl.value);if(newAmt>0)c[i].amount=newAmt;}
+      c[i].status="approved";break;
+    }
+  }
   saveContribs(c);renderAdminContribs();
   if(typeof renderFunds==="function")renderFunds();
   if(typeof renderAllContribs==="function")renderAllContribs();
