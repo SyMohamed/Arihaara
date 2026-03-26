@@ -300,14 +300,16 @@ function saveFund(){
   var name=getVal("fund-name");if(!name){alert("Nom requis.");return;}
   var typeEl=document.getElementById("fund-type");
   var ftype=typeEl?typeEl.value:"regular";
-  var f={id:"fund_"+Date.now(),name:name,desc:getVal("fund-desc"),icon:getVal("fund-icon")||"&#128176;",goal:parseInt(getVal("fund-goal"))||0,type:ftype};
-  var funds=getFunds();funds.push(f);saveFunds(funds);
+  var f={id:"fund_"+Date.now(),name:name,desc:getVal("fund-desc"),icon:getVal("fund-icon")||"💰",goal:parseInt(getVal("fund-goal"))||0,type:ftype};
+  var funds=getFunds();funds.push(f);
+  var saved=saveFunds(funds);
+  if(!saved){return;}
   setVal("fund-name","");setVal("fund-desc","");setVal("fund-goal","");setVal("fund-icon","");
-  closeOv("ov-fund");renderAdminFunds();
+  closeOv("ov-fund");closeOv("ov-admin");
+  renderAdminFunds();
   if(typeof renderFunds==="function")renderFunds();
   if(typeof updateTotal==="function")updateTotal();
-  /* reopen admin to show updated list */
-  openAdminPanel();swTab(0);
+  alert("Fonds cree avec succes !");
 }
 function deleteFund(id){
   if(!confirm("Supprimer ce fonds?"))return;
