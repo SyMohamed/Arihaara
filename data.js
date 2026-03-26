@@ -32,8 +32,18 @@ function fbLoad(localKey,callback){
   xhr.open("GET",RTDB_URL+"/"+path+".json",true);
   xhr.onload=function(){
     if(xhr.status>=200&&xhr.status<300){
-      try{var d=JSON.parse(xhr.responseText);callback(d);}
-      catch(e){callback(null);}
+      try{
+        var d=JSON.parse(xhr.responseText);
+        if(d===null||d===undefined){callback(null);return;}
+        /* Firebase RTDB converts arrays to objects with numeric keys - convert back */
+        if(d&&typeof d==="object"&&!Array.isArray(d)){
+          var arr=[];var ks=Object.keys(d);
+          for(var i=0;i<ks.length;i++){arr.push(d[ks[i]]);}
+          callback(arr);
+        } else {
+          callback(d);
+        }
+      }catch(e){callback(null);}
     } else {callback(null);}
   };
   xhr.onerror=function(){callback(null);};
