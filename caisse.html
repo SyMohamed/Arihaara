@@ -88,6 +88,7 @@
     <li><a href="membres.html">Membres</a></li>
     <li><a href="caisse.html" class="active">Caisse Solidaire</a></li>
   </ul>
+  <a href="membres.html" class="btn-member-nav" id="member-nav-btn">&#128100; Connexion</a>
   <button class="btn-admin" id="admin-nav-btn" onclick="openLoginOrPanel()">Admin</button>
 </nav>
 
@@ -216,6 +217,7 @@
 
       <!-- Tab 2: Membres -->
       <div class="tpanel" id="tp-2">
+        <button class="btn-add" onclick="openMemberForm()">+ Ajouter un membre</button>
         <div class="alist" id="members-alist"></div>
       </div>
 
@@ -295,6 +297,23 @@
 </div>
 
 <!-- Proof Viewer -->
+<!-- ADD MEMBER FORM -->
+<div class="overlay" id="ov-add-member">
+  <div class="modal">
+    <div class="mhd"><h3>Ajouter un Membre</h3><button class="mclose" onclick="closeOv('ov-add-member')">&#215;</button></div>
+    <div class="mbd">
+      <div class="fg"><label>Nom complet</label><input type="text" id="adm-mem-name" placeholder="Prenom Nom"/></div>
+      <div class="fg"><label>Mot de passe</label><input type="password" id="adm-mem-password" placeholder="Mot de passe du membre"/></div>
+      <div class="fg"><label>Role / Profession</label><input type="text" id="adm-mem-role" placeholder="ex: Eleveur, Enseignant..."/></div>
+      <div class="fg"><label>Photo (optionnel)</label>
+        <label class="upload-btn">&#128247; Choisir une photo<input type="file" accept="image/*" style="display:none" onchange="handleAdminMemberPhoto(this)"/></label>
+        <img id="adm-mem-photo-prev" src="" style="display:none;width:70px;height:70px;object-fit:cover;border-radius:50%;filter:grayscale(100%);margin-top:.5rem"/>
+      </div>
+      <button class="btn-p full" onclick="saveAdminMember()">Ajouter le membre</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="ov-proof">
   <div class="modal" style="background:transparent;box-shadow:none;max-width:90vw;align-items:center;">
     <div style="text-align:right;padding:.5rem;">
@@ -309,17 +328,23 @@
      ══════════════════════════════════════════════════════════ -->
 <script src="data.js?v=2"></script>
 <script>
+(function(){
+  var btn=document.getElementById("member-nav-btn");
+  if(!btn)return;
+  var m=curMember();
+  if(m){btn.textContent=m.name;btn.href="membres.html";}
+})();
+</script>
+<script>
 /* ── Proof upload handler ── */
 var _proofData="";
 function handleProofUpload(input){
   var file=input.files[0];if(!file)return;
-  var r=new FileReader();
-  r.onload=function(e){
-    _proofData=e.target.result;
+  compressImage(file,400,400,0.5,function(data){
+    _proofData=data;
     var prev=document.getElementById("proof-preview");
     if(prev)prev.innerHTML='<img src="'+_proofData+'"/>';
-  };
-  r.readAsDataURL(file);
+  });
 }
 
 /* ── Open contribution modal ── */
@@ -634,6 +659,8 @@ function renderMemberBar(){
     }
   });
 })();
+window.addEventListener("scroll",function(){var b=document.getElementById("back-to-top");if(b)b.classList.toggle("visible",window.scrollY>300);});
 </script>
+<button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8593;</button>
 </body>
 </html>

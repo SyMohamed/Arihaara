@@ -29,6 +29,7 @@
     <li><a href="membres.html">Membres</a></li>
     <li><a href="caisse.html">Caisse Solidaire</a></li>
   </ul>
+  <a href="membres.html" class="btn-member-nav" id="member-nav-btn">&#128100; Connexion</a>
   <button class="btn-admin" id="admin-nav-btn" onclick="openLoginOrPanel()">Admin</button>
 </nav>
 
@@ -114,7 +115,10 @@
       <div class="tpanel active" id="tp-0">
         <p style="font-size:.8rem;color:#888;margin-bottom:.8rem">Photos du diaporama (noir &amp; blanc automatique).</p>
         <div class="photo-row" id="slides-thumbs"></div>
-        <div class="fg url-row"><input type="url" id="new-slide-url" placeholder="URL photo&#8230;"/><button class="btn-p" onclick="addSlide()">+ Ajouter</button></div>
+        <label class="upload-btn" style="width:100%;justify-content:center;padding:.9rem;margin-top:.5rem">
+          &#128247; Ajouter des photos depuis votre appareil
+          <input type="file" accept="image/*" multiple style="display:none" onchange="addSlideFiles(this)"/>
+        </label>
         <hr style="margin:1rem 0;border:none;border-top:1px solid #eee"/>
         <button class="btn-p danger full" onclick="doAdminLogout()">D&eacute;connexion</button>
       </div>
@@ -131,6 +135,7 @@
         <button class="btn-p danger full" onclick="doAdminLogout()">D&eacute;connexion</button>
       </div>
       <div class="tpanel" id="tp-3">
+        <button class="btn-add" onclick="openMemberForm()">+ Ajouter un membre</button>
         <div class="notice">Approuvez les nouveaux membres qui ont demand&eacute; &agrave; rejoindre Ari-Haara Emergent.</div>
         <div class="alist" id="members-alist"></div>
         <hr style="margin:1rem 0;border:none;border-top:1px solid #eee"/>
@@ -235,6 +240,23 @@
 </div>
 
 <!-- PROOF VIEWER -->
+<!-- ADD MEMBER FORM -->
+<div class="overlay" id="ov-add-member">
+  <div class="modal">
+    <div class="mhd"><h3>Ajouter un Membre</h3><button class="mclose" onclick="closeOv('ov-add-member')">&#215;</button></div>
+    <div class="mbd">
+      <div class="fg"><label>Nom complet</label><input type="text" id="adm-mem-name" placeholder="Prenom Nom"/></div>
+      <div class="fg"><label>Mot de passe</label><input type="password" id="adm-mem-password" placeholder="Mot de passe du membre"/></div>
+      <div class="fg"><label>Role / Profession</label><input type="text" id="adm-mem-role" placeholder="ex: Eleveur, Enseignant..."/></div>
+      <div class="fg"><label>Photo (optionnel)</label>
+        <label class="upload-btn">&#128247; Choisir une photo<input type="file" accept="image/*" style="display:none" onchange="handleAdminMemberPhoto(this)"/></label>
+        <img id="adm-mem-photo-prev" src="" style="display:none;width:70px;height:70px;object-fit:cover;border-radius:50%;filter:grayscale(100%);margin-top:.5rem"/>
+      </div>
+      <button class="btn-p full" onclick="saveAdminMember()">Ajouter le membre</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="ov-proof">
   <div class="modal narrow" style="background:transparent;box-shadow:none;max-width:90vw">
     <div style="text-align:right;margin-bottom:.5rem"><button onclick="closeOv('ov-proof')" style="background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.5rem;cursor:pointer;border-radius:50%;width:36px;height:36px">&#215;</button></div>
@@ -244,6 +266,14 @@
 
 <link rel="stylesheet" href="style.css"/>
 <script src="data.js?v=2"></script>
+<script>
+(function(){
+  var btn=document.getElementById("member-nav-btn");
+  if(!btn)return;
+  var m=curMember();
+  if(m){btn.textContent=m.name;btn.href="membres.html";}
+})();
+</script>
 <script>
   document.getElementById("pw-input").addEventListener("keydown",function(e){if(e.key==="Enter")doAdminLogin();});
 
@@ -274,6 +304,8 @@
     setTimeout(function(){if(all[prev])all[prev].classList.remove("exiting");},2500);
   }
   buildSlides();
+window.addEventListener("scroll",function(){var b=document.getElementById("back-to-top");if(b)b.classList.toggle("visible",window.scrollY>300);});
 </script>
+<button class="back-to-top" id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8593;</button>
 </body>
 </html>

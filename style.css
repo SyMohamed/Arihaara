@@ -43,6 +43,8 @@ nav.scrolled { background: rgba(4,10,10,0.99); }
   transition: all 0.3s;
 }
 .btn-admin:hover, .btn-admin.logged { background: var(--cream); color: var(--teal); border-color: var(--cream); }
+.btn-member-nav{display:inline-flex;align-items:center;gap:.4rem;margin-right:.6rem;background:rgba(232,213,160,.12);border:1px solid rgba(232,213,160,.25);color:var(--cream);padding:.4rem .9rem;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:1px;font-family:"Lato",sans-serif;text-decoration:none;transition:all .3s;}
+.btn-member-nav:hover{background:rgba(232,213,160,.25);color:#fff;}
 
 /* ── PAGE PADDING ── */
 .page-top { padding-top: 80px; }
@@ -319,3 +321,40 @@ footer { background: var(--black); padding: 3rem 2rem; text-align: center; borde
 .fok{color:#2e7d32;font-size:.78rem;margin-top:.35rem;display:none;}
 .off{background:#f5f0e8;}
 @media(max-width:768px){.auth-grid{grid-template-columns:1fr;}}
+
+/* ── Accessibility & Polish ── */
+*:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
+
+/* ── Back to top button ── */
+.back-to-top{display:none;position:fixed;bottom:2rem;left:2rem;z-index:800;
+  background:var(--teal);color:var(--cream);border:none;width:44px;height:44px;
+  border-radius:50%;font-size:1.2rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.25);
+  transition:all .3s;align-items:center;justify-content:center;}
+.back-to-top.visible{display:flex;}
+.back-to-top:hover{background:var(--teal-light);transform:translateY(-2px);}
+
+/* ── Better mobile nav ── */
+@media(max-width:700px){
+  .nav-links{gap:.5rem;}
+  .nav-links a{font-size:.6rem;letter-spacing:.08em;}
+  .btn-admin,.btn-member-nav{font-size:.58rem;padding:.3rem .5rem;}
+  .fund-grid{grid-template-columns:1fr!important;padding:1.5rem 1rem!important;}
+  .acts-grid{grid-template-columns:1fr!important;padding:2rem 1rem!important;}
+  .auth-grid{grid-template-columns:1fr!important;}
+  .membership-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))!important;}
+}
+
+/* ── Smooth scroll ── */
+html{scroll-behavior:smooth;}
+
+/* ── Toast notification ── */
+.toast{position:fixed;top:1.5rem;right:1.5rem;z-index:9999;background:var(--teal);color:var(--cream);
+  padding:.8rem 1.5rem;border-radius:4px;font-family:"Lato",sans-serif;font-size:.85rem;
+  box-shadow:0 6px 24px rgba(0,0,0,.3);transform:translateX(120%);transition:transform .4s ease;max-width:320px;}
+.toast.show{transform:translateX(0);}
+.toast.error{background:#c0392b;}
+.toast.success{background:var(--teal);}
+
+/* ── Better hover on cards ── */
+.fund-card,.act-card,.mem-carousel-card{transition:transform .3s,box-shadow .3s;}

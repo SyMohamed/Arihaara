@@ -2,7 +2,40 @@
    data.js  -  Ari-Haara shared data engine
    ============================================================ */
 function ahLoad(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
-function ahSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){alert("Erreur de sauvegarde: stockage plein. Essayez avec moins de photos.");return false;}}
+function ahSave(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));return true;}
+  catch(e){
+    /* try to free space by removing old proof images from approved contribs */
+    try{
+      var c=JSON.parse(localStorage.getItem("ah_contribs")||"[]");
+      var freed=false;
+      for(var i=0;i<c.length;i++){if(c[i].proof&&c[i].status==="approved"){c[i].proof="";freed=true;}}
+      if(freed){localStorage.setItem("ah_contribs",JSON.stringify(c));}
+      localStorage.setItem(k,JSON.stringify(v));return true;
+    }catch(e2){
+      if(confirm("Stockage plein. Voulez-vous vider les anciennes donnees pour liberer de l espace ?")){
+        clearOldData();
+        try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e3){alert("Stockage toujours plein. Supprimez des activites ou photos.");return false;}
+      }
+      return false;
+    }
+  }
+}
+function clearOldData(){
+  /* remove proof images from all contribs */
+  var c=ahLoad("ah_contribs",[]);
+  for(var i=0;i<c.length;i++){c[i].proof="";}
+  try{localStorage.setItem("ah_contribs",JSON.stringify(c));}catch(e){}
+  /* recompress any oversized founder/member photos */
+  var keys=["ah_founders","ah_members"];
+  for(var k=0;k<keys.length;k++){
+    var items=ahLoad(keys[k],[]);var changed=false;
+    for(var j=0;j<items.length;j++){
+      if(items[j].photo&&items[j].photo.length>50000){items[j].photo="";changed=true;}
+    }
+    if(changed)try{localStorage.setItem(keys[k],JSON.stringify(items));}catch(e){}
+  }
+}
 function ahSession(k,def){try{var v=sessionStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
 function ahSaveSession(k,v){try{sessionStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 
@@ -42,6 +75,39 @@ function openOv(id){document.getElementById(id).classList.add("open");}
 function closeOv(id){document.getElementById(id).classList.remove("open");}
 window.addEventListener("scroll",function(){var n=document.getElementById("main-nav");if(n)n.classList.toggle("scrolled",window.scrollY>40);});
 window.addEventListener("click",function(e){if(e.target&&e.target.classList&&e.target.classList.contains("overlay"))e.target.classList.remove("open");});
+
+/* IMAGE COMPRESSION - resizes images to save localStorage space */
+var MAX_FILE_KB=250;
+function compressImage(file,maxW,maxH,quality,cb){
+  maxW=maxW||400;maxH=maxH||400;quality=quality||0.4;
+  if(file.size>MAX_FILE_KB*1024){
+    /* file too large - compress it automatically */
+    quality=Math.min(quality,0.3);
+  }
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width;var h=img.height;
+      if(w>maxW||h>maxH){
+        var ratio=Math.min(maxW/w,maxH/h);
+        w=Math.round(w*ratio);h=Math.round(h*ratio);
+      }
+      var canvas=document.createElement("canvas");
+      canvas.width=w;canvas.height=h;
+      var ctx=canvas.getContext("2d");
+      ctx.drawImage(img,0,0,w,h);
+      var result=canvas.toDataURL("image/jpeg",quality);
+      /* if still too large, reduce further */
+      if(result.length>MAX_FILE_KB*1024){
+        result=canvas.toDataURL("image/jpeg",0.2);
+      }
+      cb(result);
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
 /* ADMIN AUTH */
 function openLoginOrPanel(){if(_isAdmin){openAdminPanel();}else{openAdminLogin();}}
@@ -94,13 +160,11 @@ function openFounderForm(id){
 }
 function handleFounderPhoto(input){
   var file=input.files[0];if(!file)return;
-  var r=new FileReader();
-  r.onload=function(e){
-    _founderPhotoData=e.target.result;
+  compressImage(file,300,300,0.5,function(data){
+    _founderPhotoData=data;
     var prev=document.getElementById("fn-photo-preview");var wrap=document.getElementById("fn-photo-preview-wrap");
     if(prev){prev.src=_founderPhotoData;if(wrap)wrap.style.display="block";}
-  };
-  r.readAsDataURL(file);
+  });
 }
 function saveFounder(){
   var name=getVal("fn-name");if(!name){alert("Nom requis.");return;}
@@ -114,6 +178,7 @@ function saveFounder(){
   renderAdminFounders();
 }
 function deleteFounder(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(!confirm("Supprimer?"))return;
   saveFounders(getFounders().filter(function(f){return f.id!==id;}));
   if(typeof renderFounders==="function")renderFounders();
@@ -136,6 +201,7 @@ function renderAdminFounders(){
 }
 
 /* ── MEMBERS ADMIN ────────────────────────────────────── */
+var _adminMemberPhoto="";
 function renderAdminMembers(){
   var el=document.getElementById("members-alist");if(!el)return;
   var members=getMembers();
@@ -154,11 +220,36 @@ function renderAdminMembers(){
   }
   el.innerHTML=h;
 }
+function openMemberForm(){
+  _adminMemberPhoto="";
+  setVal("adm-mem-name","");setVal("adm-mem-password","");setVal("adm-mem-role","");
+  var prev=document.getElementById("adm-mem-photo-prev");if(prev)prev.style.display="none";
+  openOv("ov-add-member");
+}
+function handleAdminMemberPhoto(input){
+  var file=input.files[0];if(!file)return;
+  compressImage(file,250,250,0.4,function(data){
+    _adminMemberPhoto=data;
+    var prev=document.getElementById("adm-mem-photo-prev");
+    if(prev){prev.src=data;prev.style.display="block";}
+  });
+}
+function saveAdminMember(){
+  var name=getVal("adm-mem-name");if(!name){alert("Nom requis.");return;}
+  var pw=getVal("adm-mem-password");if(!pw){alert("Mot de passe requis.");return;}
+  var members=getMembers();
+  for(var i=0;i<members.length;i++){if(members[i].name.toLowerCase()===name.toLowerCase()){alert("Ce nom existe deja.");return;}}
+  members.push({id:"mem_"+Date.now(),name:name,password:pw,role:getVal("adm-mem-role"),bio:"",photo:_adminMemberPhoto,status:"approved",joinDate:new Date().toLocaleDateString("fr-FR")});
+  saveMembers(members);closeOv("ov-add-member");
+  renderAdminMembers();if(typeof renderAllMembers==="function")renderAllMembers();
+  if(typeof showToast==="function")showToast("Membre ajoute avec succes !");
+}
 function approveMember(id){
   var m=getMembers();for(var i=0;i<m.length;i++){if(m[i].id===id){m[i].status="approved";break;}}
   saveMembers(m);renderAdminMembers();if(typeof renderAllMembers==="function")renderAllMembers();
 }
 function deleteMember(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(!confirm("Supprimer?"))return;
   saveMembers(getMembers().filter(function(m){return m.id!==id;}));
   renderAdminMembers();if(typeof renderAllMembers==="function")renderAllMembers();
@@ -198,16 +289,13 @@ function handleActPhotos(input){
   var remaining=files.length;
   for(var i=0;i<files.length;i++){
     (function(file){
-      var r=new FileReader();
-      r.onload=function(e){
-        _actPhotos.push(e.target.result);
+      compressImage(file,600,600,0.4,function(data){
+        _actPhotos.push(data);
         remaining--;
         if(remaining===0)renderActPhotosPreview();
-      };
-      r.readAsDataURL(file);
+      });
     })(files[i]);
   }
-  /* reset so same files can be re-selected */
   input.value="";
 }
 
@@ -224,6 +312,7 @@ function renderActPhotosPreview(){
 function rmActPhoto(i){_actPhotos.splice(i,1);renderActPhotosPreview();}
 
 function delAct(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(!confirm("Supprimer?"))return;
   saveActs(getActs().filter(function(a){return a.id!==id;}));
   renderActAlist();if(typeof renderActs==="function")renderActs();
@@ -271,7 +360,27 @@ function addSlide(){
   var ex=getSlidesExtra();ex.push({id:"ex_"+Date.now(),src:url});saveSlidesExtra(ex);
   setVal("new-slide-url","");renderAdminSlides();if(typeof buildSlides==="function")buildSlides();
 }
+function addSlideFiles(input){
+  var files=input.files;if(!files||!files.length)return;
+  var ex=getSlidesExtra();
+  var remaining=files.length;
+  for(var i=0;i<files.length;i++){
+    (function(file){
+      compressImage(file,1000,600,0.5,function(data){
+        ex.push({id:"ex_"+Date.now()+"_"+Math.random().toString(36).substr(2,4),src:data});
+        remaining--;
+        if(remaining===0){
+          saveSlidesExtra(ex);
+          renderAdminSlides();
+          if(typeof buildSlides==="function")buildSlides();
+        }
+      });
+    })(files[i]);
+  }
+  input.value="";
+}
 function removeSlide(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(id.indexOf("base_")===0){var rm=getSlidesRemoved();if(rm.indexOf(id)===-1)rm.push(id);saveSlidesRemoved(rm);}
   else saveSlidesExtra(getSlidesExtra().filter(function(s){return s.id!==id;}));
   renderAdminSlides();if(typeof buildSlides==="function")buildSlides();
@@ -312,10 +421,17 @@ function saveFund(){
   }catch(e){
     alert("Erreur: stockage plein.");return;
   }
-  /* reload page so funds grid re-renders from fresh localStorage data */
-  window.location.reload();
+  setVal("fund-name","");setVal("fund-desc","");setVal("fund-goal","");setVal("fund-icon","");
+  var typeEl2=document.getElementById("fund-type");if(typeEl2)typeEl2.value="regular";
+  closeOv("ov-fund");closeOv("ov-admin");
+  renderAdminFunds();
+  if(typeof renderFunds==="function")renderFunds();
+  if(typeof updateTotal==="function")updateTotal();
+  if(typeof renderMembershipTrackers==="function")renderMembershipTrackers();
+  showToast("Fonds cree avec succes !");
 }
 function deleteFund(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(!confirm("Supprimer ce fonds?"))return;
   saveFunds(getFunds().filter(function(f){return f.id!==id;}));
   renderAdminFunds();if(typeof renderFunds==="function")renderFunds();
@@ -359,6 +475,7 @@ function approveContrib(id){
   if(typeof updateTotal==="function")updateTotal();
 }
 function rejectContrib(id){
+  if(!_isAdmin){alert("Seul l administrateur peut rejeter.");return;}
   if(!confirm("Rejeter?"))return;
   saveContribs(getContribs().filter(function(c){return c.id!==id;}));
   renderAdminContribs();
@@ -395,6 +512,14 @@ function exportContribsCSV(){
   a.href=url;a.download="contributions_arihaara.csv";
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/* ── TOAST NOTIFICATIONS ── */
+function showToast(msg,type){
+  var t=document.createElement("div");t.className="toast "+(type||"success");
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(function(){t.classList.add("show");},50);
+  setTimeout(function(){t.classList.remove("show");setTimeout(function(){t.remove();},400);},3000);
 }
 
 /* ── OPEN ADMIN PANEL ─────────────────────────────────── */
