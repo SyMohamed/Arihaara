@@ -2,7 +2,7 @@
    data.js  -  Ari-Haara shared data engine
    ============================================================ */
 function ahLoad(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
-function ahSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function ahSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){alert("Erreur de sauvegarde: stockage plein. Essayez avec moins de photos.");return false;}}
 function ahSession(k,def){try{var v=sessionStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
 function ahSaveSession(k,v){try{sessionStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 
@@ -20,7 +20,7 @@ function saveFounders(v){ahSave("ah_founders",v);}
 function getMembers(){return ahLoad("ah_members",[]);}
 function saveMembers(v){ahSave("ah_members",v);}
 function getActs(){return ahLoad("ah_acts",[]);}
-function saveActs(v){ahSave("ah_acts",v);}
+function saveActs(v){return ahSave("ah_acts",v);}
 function getFunds(){return ahLoad("ah_funds",[]);}
 function saveFunds(v){ahSave("ah_funds",v);}
 function getContribs(){return ahLoad("ah_contribs",[]);}
@@ -242,7 +242,16 @@ function saveAct(){
   var acts=getActs();
   if(eid){var ok=false;for(var i=0;i<acts.length;i++){if(acts[i].id===eid){acts[i]=act;ok=true;break;}}if(!ok)acts.push(act);}
   else acts.push(act);
-  saveActs(acts);closeOv("ov-act");renderActAlist();if(typeof renderActs==="function")renderActs();
+  var saved=saveActs(acts);
+  if(!saved){return;}
+  closeOv("ov-act");
+  renderActAlist();
+  if(typeof renderActs==="function")renderActs();
+  /* reopen admin panel so user sees the updated list */
+  openAdminPanel();
+  /* switch to the tab that contains the activities list */
+  var actEl=document.getElementById("act-alist");
+  if(actEl){var p=actEl.closest(".tpanel");if(p&&p.id){var n=parseInt(p.id.replace("tp-",""));if(!isNaN(n))swTab(n);}}
 }
 
 /* ── SLIDES ───────────────────────────────────────────── */
