@@ -201,6 +201,7 @@ function renderAdminFounders(){
 }
 
 /* ── MEMBERS ADMIN ────────────────────────────────────── */
+var _adminMemberPhoto="";
 function renderAdminMembers(){
   var el=document.getElementById("members-alist");if(!el)return;
   var members=getMembers();
@@ -218,6 +219,30 @@ function renderAdminMembers(){
     h+='<button class="btn-sm del" onclick="deleteMember(\''+m.id+'\')">Suppr.</button></div></div>';
   }
   el.innerHTML=h;
+}
+function openMemberForm(){
+  _adminMemberPhoto="";
+  setVal("adm-mem-name","");setVal("adm-mem-password","");setVal("adm-mem-role","");
+  var prev=document.getElementById("adm-mem-photo-prev");if(prev)prev.style.display="none";
+  openOv("ov-add-member");
+}
+function handleAdminMemberPhoto(input){
+  var file=input.files[0];if(!file)return;
+  compressImage(file,250,250,0.4,function(data){
+    _adminMemberPhoto=data;
+    var prev=document.getElementById("adm-mem-photo-prev");
+    if(prev){prev.src=data;prev.style.display="block";}
+  });
+}
+function saveAdminMember(){
+  var name=getVal("adm-mem-name");if(!name){alert("Nom requis.");return;}
+  var pw=getVal("adm-mem-password");if(!pw){alert("Mot de passe requis.");return;}
+  var members=getMembers();
+  for(var i=0;i<members.length;i++){if(members[i].name.toLowerCase()===name.toLowerCase()){alert("Ce nom existe deja.");return;}}
+  members.push({id:"mem_"+Date.now(),name:name,password:pw,role:getVal("adm-mem-role"),bio:"",photo:_adminMemberPhoto,status:"approved",joinDate:new Date().toLocaleDateString("fr-FR")});
+  saveMembers(members);closeOv("ov-add-member");
+  renderAdminMembers();if(typeof renderAllMembers==="function")renderAllMembers();
+  if(typeof showToast==="function")showToast("Membre ajoute avec succes !");
 }
 function approveMember(id){
   var m=getMembers();for(var i=0;i<m.length;i++){if(m[i].id===id){m[i].status="approved";break;}}
