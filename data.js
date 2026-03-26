@@ -10,47 +10,76 @@ var FS_MAP={
   "ah_funds":"funds","ah_contribs":"contributions",
   "ah_slides_rm":"slides_removed","ah_slides_ex":"slides_extra"
 };
-function initFirestore(){
-  try{
-    if(typeof firebase!=="undefined"&&firebase.firestore){
-      db=firebase.firestore();
-      syncFromFirestore();
-    }
-  }catch(e){console.warn("Firestore init failed:",e);}
-}
 function firestoreSave(localKey,data){
   if(!db)return;
   var col=FS_MAP[localKey];if(!col)return;
   db.collection(col).doc("data").set({items:data,updated:new Date().toISOString()})
+    .then(function(){console.log("Firestore saved:",col);})
     .catch(function(e){console.error("Firestore save error:",col,e);});
 }
+
+/* Push ALL local data to Firestore (first-time migration) */
+function pushAllToFirestore(){
+  if(!db)return;
+  var keys=Object.keys(FS_MAP);
+  keys.forEach(function(localKey){
+    var data=ahLoad(localKey,null);
+    if(data!==null){
+      firestoreSave(localKey,data);
+    }
+  });
+  console.log("All local data pushed to Firestore!");
+  if(typeof showToast==="function")showToast("Donnees synchronisees !");
+}
+
 function syncFromFirestore(){
   if(!db)return;
   var keys=Object.keys(FS_MAP);
   var loaded=0;
+  var gotAny=false;
   keys.forEach(function(localKey){
     var col=FS_MAP[localKey];
     db.collection(col).doc("data").get().then(function(doc){
-      if(doc.exists&&doc.data().items){
+      if(doc.exists&&doc.data()&&doc.data().items){
         try{localStorage.setItem(localKey,JSON.stringify(doc.data().items));}catch(e){}
+        gotAny=true;
       }
       loaded++;
       if(loaded===keys.length){
-        /* re-render everything after sync */
-        if(typeof renderFunds==="function")renderFunds();
-        if(typeof renderActs==="function")renderActs();
-        if(typeof renderAllMembers==="function")renderAllMembers();
-        if(typeof renderFounders==="function")renderFounders();
-        if(typeof renderMyContribs==="function")renderMyContribs();
-        if(typeof renderAllContribs==="function")renderAllContribs();
-        if(typeof updateTotal==="function")updateTotal();
-        if(typeof renderMembershipTrackers==="function")renderMembershipTrackers();
-        if(typeof buildSlides==="function")buildSlides();
+        if(gotAny){
+          /* re-render everything after sync */
+          if(typeof renderFunds==="function")renderFunds();
+          if(typeof renderActs==="function")renderActs();
+          if(typeof renderAllMembers==="function")renderAllMembers();
+          if(typeof renderFounders==="function")renderFounders();
+          if(typeof renderMyContribs==="function")renderMyContribs();
+          if(typeof renderAllContribs==="function")renderAllContribs();
+          if(typeof updateTotal==="function")updateTotal();
+          if(typeof renderMembershipTrackers==="function")renderMembershipTrackers();
+          if(typeof buildSlides==="function")buildSlides();
+          console.log("Firestore sync complete - data loaded");
+        } else {
+          console.log("Firestore empty - pushing local data up");
+          pushAllToFirestore();
+        }
       }
     }).catch(function(e){loaded++;console.warn("Firestore load error:",col,e);});
   });
 }
-window.addEventListener("load",function(){setTimeout(initFirestore,300);});
+
+function initFirestore(){
+  try{
+    if(typeof firebase!=="undefined"&&firebase.firestore){
+      db=firebase.firestore();
+      console.log("Firestore connected!");
+      syncFromFirestore();
+    } else {
+      console.warn("Firebase SDK not loaded");
+    }
+  }catch(e){console.warn("Firestore init failed:",e);}
+}
+
+window.addEventListener("load",function(){setTimeout(initFirestore,500);});
 
 /* ── LOCAL STORAGE (cache layer) ── */
 function ahLoad(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
