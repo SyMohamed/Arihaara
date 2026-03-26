@@ -7,81 +7,65 @@
 <link rel="stylesheet" href="style.css"/>
 <style>
 /* ── ACTIVITY SPECIFIC ── */
-.acts-timeline{max-width:1080px;margin:0 auto;padding:4rem 2rem;}
+
+/* ── GRID OF ACTIVITY CARDS ── */
+.acts-grid{max-width:1200px;margin:0 auto;padding:3rem 2rem;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:2rem;}
 .act-card{
-  background:var(--white);border-radius:4px;
+  background:var(--white);border-radius:6px;
   box-shadow:0 4px 24px rgba(13,74,71,.08);
-  overflow:hidden;margin-bottom:3.5rem;
-  transition:box-shadow .3s;
+  overflow:hidden;cursor:pointer;
+  transition:box-shadow .4s,transform .4s;
 }
-.act-card:hover{box-shadow:0 8px 40px rgba(13,74,71,.14);}
-
-/* HEADER BAR */
-.act-card-header{
-  background:var(--teal-dark);
-  padding:1.4rem 2rem;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:.5rem;
-}
-.act-card-title{font-family:"Cinzel",serif;font-size:1.3rem;color:var(--cream);letter-spacing:.04em;}
-.act-card-meta{display:flex;align-items:center;gap:1rem;}
-.act-card-date{
-  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--cream-dark);
-  background:rgba(232,213,160,.1);
-  border:1px solid rgba(232,213,160,.2);
-  padding:.3rem .8rem;border-radius:20px;
-}
-.act-card-count{font-size:.72rem;color:rgba(232,213,160,.45);letter-spacing:.1em;}
-
-/* DESCRIPTION */
-.act-card-body{padding:1.8rem 2rem;}
-.act-card-desc{
-  font-family:"Cormorant Garamond",serif;font-size:1.1rem;
-  line-height:1.85;color:#333;
-  max-width:720px;
-}
-
-/* PHOTO MOSAIC */
-.act-mosaic{display:grid;gap:3px;}
-.act-mosaic.n1{grid-template-columns:1fr;}
-.act-mosaic.n2{grid-template-columns:1fr 1fr;}
-.act-mosaic.n3{grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;}
-.act-mosaic.n3 .act-photo:first-child{grid-row:1/3;}
-.act-mosaic.n4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;}
-.act-mosaic.nmore{grid-template-columns:repeat(3,1fr);grid-template-rows:200px 200px;}
-.act-mosaic.nmore .act-photo:first-child{grid-column:1/3;}
-
-.act-photo{
-  position:relative;overflow:hidden;cursor:pointer;
-  background:#e8e4d8;
-}
-.act-photo img{
-  width:100%;height:100%;object-fit:cover;object-position:top;
-  filter:grayscale(100%);
-  transition:filter .5s ease,transform .5s ease;
-  display:block;
-}
-.act-mosaic.n1 .act-photo{height:420px;}
-.act-mosaic.n2 .act-photo{height:320px;}
-.act-mosaic.n3 .act-photo{height:200px;}
-.act-mosaic.nmore .act-photo{height:200px;}
-
-.act-photo:hover img{filter:grayscale(0%);transform:scale(1.04);}
-.act-photo-overlay{
-  position:absolute;inset:0;
-  background:rgba(8,46,44,0);
-  transition:background .4s;
+.act-card:hover{box-shadow:0 12px 48px rgba(13,74,71,.16);transform:translateY(-4px);}
+.act-card-cover{position:relative;width:100%;height:240px;overflow:hidden;background:#e8e4d8;}
+.act-card-cover img{width:100%;height:100%;object-fit:cover;object-position:top;
+  filter:grayscale(100%);transition:filter .5s,transform .5s;display:block;}
+.act-card:hover .act-card-cover img{filter:grayscale(0%);transform:scale(1.05);}
+.act-card-badge{position:absolute;bottom:.8rem;right:.8rem;
+  background:rgba(8,46,44,.75);color:var(--cream);font-size:.7rem;
+  padding:.3rem .7rem;border-radius:20px;letter-spacing:.08em;backdrop-filter:blur(4px);}
+.act-card-noimg{width:100%;height:240px;background:var(--teal-dark);
   display:flex;align-items:center;justify-content:center;
-}
-.act-photo:hover .act-photo-overlay{background:rgba(8,46,44,.2);}
-.act-photo-more{
-  position:absolute;inset:0;
-  background:rgba(8,46,44,.65);
-  display:flex;align-items:center;justify-content:center;
-  color:var(--cream);font-family:"Cinzel",serif;font-size:1.8rem;
-  letter-spacing:.05em;cursor:pointer;
-}
+  color:var(--cream-dark);font-size:3rem;opacity:.4;}
+.act-card-info{padding:1.2rem 1.4rem;}
+.act-card-title{font-family:"Cinzel",serif;font-size:1.1rem;color:var(--teal-dark);letter-spacing:.03em;margin-bottom:.4rem;}
+.act-card-date{font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--cream-dark);margin-bottom:.6rem;}
+.act-card-snippet{font-family:"Cormorant Garamond",serif;font-size:.95rem;
+  line-height:1.7;color:#666;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+/* ── DETAIL OVERLAY ── */
+.act-detail-overlay{display:none;position:fixed;inset:0;z-index:2500;
+  background:rgba(4,10,10,.92);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.act-detail-overlay.open{display:block;}
+.act-detail{max-width:960px;margin:0 auto;padding:2rem;padding-top:4rem;}
+.act-detail-close{position:fixed;top:1.2rem;right:1.5rem;z-index:2600;
+  background:rgba(232,213,160,.12);border:1px solid rgba(232,213,160,.25);
+  color:var(--cream);width:44px;height:44px;border-radius:50%;
+  font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .3s;}
+.act-detail-close:hover{background:rgba(232,213,160,.3);}
+.act-detail-title{font-family:"Cinzel",serif;font-size:clamp(1.5rem,4vw,2.4rem);
+  color:var(--cream);letter-spacing:.04em;margin-bottom:.5rem;}
+.act-detail-date{font-size:.75rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--cream-dark);margin-bottom:2rem;}
+.act-detail-desc{font-family:"Cormorant Garamond",serif;font-size:1.15rem;
+  line-height:2;color:rgba(232,213,160,.8);max-width:720px;margin-bottom:2.5rem;}
+.act-detail-photos{display:grid;gap:6px;}
+.act-detail-photos.g1{grid-template-columns:1fr;}
+.act-detail-photos.g2{grid-template-columns:1fr 1fr;}
+.act-detail-photos.g3{grid-template-columns:1fr 1fr 1fr;}
+.act-detail-photo{position:relative;overflow:hidden;border-radius:3px;cursor:pointer;background:#e8e4d8;}
+.act-detail-photo img{width:100%;height:100%;object-fit:cover;display:block;
+  filter:grayscale(100%);transition:filter .5s,transform .5s;}
+.act-detail-photo:hover img{filter:grayscale(0%);transform:scale(1.03);}
+.act-detail-photos.g1 .act-detail-photo{height:auto;max-height:520px;}
+.act-detail-photos.g1 .act-detail-photo img{height:auto;max-height:520px;object-fit:contain;}
+.act-detail-photos.g2 .act-detail-photo{height:300px;}
+.act-detail-photos.g3 .act-detail-photo{height:250px;}
+.act-detail-memories{margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(232,213,160,.12);
+  font-family:"Cormorant Garamond",serif;font-style:italic;font-size:1rem;
+  color:rgba(232,213,160,.5);text-align:center;letter-spacing:.05em;}
 
 /* LIGHTBOX */
 .lightbox{
@@ -135,7 +119,13 @@
   <p class="pg-banner-sub">Initiatives et projets menes au coeur de la communaute</p>
 </div>
 
-<div class="acts-timeline" id="acts-list"></div>
+<div class="acts-grid" id="acts-list"></div>
+
+<!-- ACTIVITY DETAIL OVERLAY -->
+<div class="act-detail-overlay" id="act-detail-ov">
+  <button class="act-detail-close" onclick="closeActDetail()">&#215;</button>
+  <div class="act-detail" id="act-detail-content"></div>
+</div>
 
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -258,51 +248,68 @@ function lbPrev(){_lbIdx=(_lbIdx-1+_lbPhotos.length)%_lbPhotos.length;document.g
 function lbNext(){_lbIdx=(_lbIdx+1)%_lbPhotos.length;document.getElementById("lb-img").src=_lbPhotos[_lbIdx];document.getElementById("lb-counter").textContent=(_lbIdx+1)+" / "+_lbPhotos.length;}
 document.addEventListener("keydown",function(e){if(!document.getElementById("lightbox").classList.contains("open"))return;if(e.key==="ArrowLeft")lbPrev();if(e.key==="ArrowRight")lbNext();if(e.key==="Escape")closeLightbox();});
 
-/* ── RENDER ACTIVITIES ── */
+/* ── RENDER ACTIVITIES GRID ── */
 function renderActs(){
   var acts=getActs();var el=document.getElementById("acts-list");
   if(!acts.length){
-    el.innerHTML='<div class="empty-msg">Aucune activite enregistree.<br><span style="font-size:.85rem;opacity:.6">L administrateur peut en ajouter via le bouton Admin.</span></div>';
+    el.innerHTML='<div class="empty-msg" style="grid-column:1/-1">Aucune activite enregistree.<br><span style="font-size:.85rem;opacity:.6">L administrateur peut en ajouter via le bouton Admin.</span></div>';
     return;
   }
   var html="";
   for(var i=0;i<acts.length;i++){
     var a=acts[i];var photos=a.photos||[];
-    var photosJson=JSON.stringify(photos).replace(/'/g,"&#39;");
-
-    /* mosaic class */
-    var mc="n1";
-    if(photos.length===2)mc="n2";
-    else if(photos.length===3)mc="n3";
-    else if(photos.length===4)mc="n4";
-    else if(photos.length>4)mc="nmore";
-
-    var mosaicHtml="";
-    var show=photos.length>5?5:photos.length;
-    for(var j=0;j<show;j++){
-      if(j===4&&photos.length>5){
-        mosaicHtml+='<div class="act-photo"><img src="'+photos[j]+'"/>';
-        mosaicHtml+='<div class="act-photo-more">+'+(photos.length-4)+'</div></div>';
-      } else {
-        mosaicHtml+='<div class="act-photo" onclick="openLightbox('+photosJson+','+j+')">';
-        mosaicHtml+='<img src="'+photos[j]+'" alt=""/>';
-        mosaicHtml+='<div class="act-photo-overlay"></div></div>';
-      }
+    html+='<div class="act-card" onclick="openActDetail(\''+a.id+'\')">';
+    if(photos.length){
+      html+='<div class="act-card-cover"><img src="'+photos[0]+'" alt="'+a.name+'"/>';
+      if(photos.length>1)html+='<div class="act-card-badge">'+photos.length+' photos</div>';
+      html+='</div>';
+    } else {
+      html+='<div class="act-card-noimg">&#128247;</div>';
     }
-
-    html+='<div class="act-card">';
-    html+='<div class="act-card-header">';
-    html+='<div class="act-card-title">'+ a.name +'</div>';
-    html+='<div class="act-card-meta">';
-    if(a.date)html+='<div class="act-card-date">&#128197; '+ a.date +'</div>';
-    if(photos.length)html+='<div class="act-card-count">'+ photos.length +' photo'+(photos.length>1?"s":"")+'</div>';
+    html+='<div class="act-card-info">';
+    html+='<div class="act-card-title">'+a.name+'</div>';
+    if(a.date)html+='<div class="act-card-date">&#128197; '+a.date+'</div>';
+    if(a.desc)html+='<div class="act-card-snippet">'+a.desc+'</div>';
     html+='</div></div>';
-    if(a.desc){html+='<div class="act-card-body"><div class="act-card-desc">'+ a.desc +'</div></div>';}
-    if(photos.length){html+='<div class="act-mosaic '+ mc +'">'+ mosaicHtml +'</div>';}
-    html+='</div>';
   }
   el.innerHTML=html;
 }
+
+/* ── ACTIVITY DETAIL VIEW ── */
+function openActDetail(id){
+  var acts=getActs();var a=null;
+  for(var i=0;i<acts.length;i++){if(acts[i].id===id){a=acts[i];break;}}
+  if(!a)return;
+  var photos=a.photos||[];
+  var photosJson=JSON.stringify(photos).replace(/'/g,"&#39;");
+  var h='';
+  h+='<div class="act-detail-title">'+a.name+'</div>';
+  if(a.date)h+='<div class="act-detail-date">&#128197; '+a.date+'</div>';
+  if(a.desc)h+='<div class="act-detail-desc">'+a.desc+'</div>';
+  if(photos.length){
+    var gc="g3";
+    if(photos.length===1)gc="g1";
+    else if(photos.length===2)gc="g2";
+    h+='<div class="act-detail-photos '+gc+'">';
+    for(var j=0;j<photos.length;j++){
+      h+='<div class="act-detail-photo" onclick="openLightbox('+photosJson+','+j+')">';
+      h+='<img src="'+photos[j]+'" alt=""/></div>';
+    }
+    h+='</div>';
+  }
+  if(photos.length)h+='<div class="act-detail-memories">&#10024; Souvenirs de cette activite &mdash; '+photos.length+' photo'+(photos.length>1?'s':'')+'</div>';
+  document.getElementById("act-detail-content").innerHTML=h;
+  document.getElementById("act-detail-ov").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeActDetail(){
+  document.getElementById("act-detail-ov").classList.remove("open");
+  document.body.style.overflow="";
+}
+document.addEventListener("keydown",function(e){
+  if(e.key==="Escape"&&document.getElementById("act-detail-ov").classList.contains("open"))closeActDetail();
+});
+
 renderActs();
 </script>
 </body>
