@@ -147,6 +147,65 @@ function getVal(id){var e=document.getElementById(id);return e?e.value.trim():""
 
 /* ── FOUNDERS ─────────────────────────────────────────── */
 var _founderPhotoData="";
+
+/* Sync a founder into the members list so they can log in and contribute */
+function syncFounderToMembers(founder){
+  var members=getMembers();
+  var found=false;
+  for(var i=0;i<members.length;i++){
+    if(members[i].founderId===founder.id){
+      /* update existing member entry */
+      members[i].name=founder.name;
+      members[i].role=founder.role;
+      members[i].photo=founder.photo;
+      found=true;break;
+    }
+  }
+  if(!found){
+    members.push({
+      id:"mem_"+Date.now(),
+      founderId:founder.id,
+      name:founder.name,
+      password:"arihaara",
+      role:founder.role||"Co-Fondateur",
+      bio:founder.bio||"",
+      photo:founder.photo||"",
+      status:"approved",
+      joinDate:new Date().toLocaleDateString("fr-FR")
+    });
+  }
+  saveMembers(members);
+}
+
+/* Sync ALL founders into members (called once on load) */
+function syncAllFoundersToMembers(){
+  var founders=getFounders();
+  var members=getMembers();
+  var changed=false;
+  for(var i=0;i<founders.length;i++){
+    var f=founders[i];
+    if(f.name==="Membre Fondateur "+(i+1))continue;/* skip default placeholders */
+    var exists=false;
+    for(var j=0;j<members.length;j++){
+      if(members[j].founderId===f.id){exists=true;break;}
+    }
+    if(!exists){
+      members.push({
+        id:"mem_"+Date.now()+"_"+i,
+        founderId:f.id,
+        name:f.name,
+        password:"arihaara",
+        role:f.role||"Co-Fondateur",
+        bio:f.bio||"",
+        photo:f.photo||"",
+        status:"approved",
+        joinDate:new Date().toLocaleDateString("fr-FR")
+      });
+      changed=true;
+    }
+  }
+  if(changed)saveMembers(members);
+}
 function openFounderForm(id){
   _founderPhotoData="";
   var founders=getFounders();var f=null;
@@ -173,9 +232,13 @@ function saveFounder(){
   var founders=getFounders();
   if(eid){var ok=false;for(var i=0;i<founders.length;i++){if(founders[i].id===eid){founders[i]=f;ok=true;break;}}if(!ok)founders.push(f);}
   else founders.push(f);
-  saveFounders(founders);closeOv("ov-founder");
+  saveFounders(founders);
+  /* sync founder to members list */
+  syncFounderToMembers(f);
+  closeOv("ov-founder");
   if(typeof renderFounders==="function")renderFounders();
-  renderAdminFounders();
+  renderAdminFounders();renderAdminMembers();
+  if(typeof renderAllMembers==="function")renderAllMembers();
 }
 function deleteFounder(id){
   if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
@@ -524,6 +587,7 @@ function showToast(msg,type){
 
 /* ── OPEN ADMIN PANEL ─────────────────────────────────── */
 function openAdminPanel(){
+  syncAllFoundersToMembers();
   renderAdminFounders();renderAdminMembers();renderActAlist();
   renderAdminFunds();renderAdminContribs();renderAdminSlides();
   swTab(0);openOv("ov-admin");
