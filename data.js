@@ -1,103 +1,93 @@
 /* ============================================================
    data.js  -  Ari-Haara shared data engine
-   Firebase Realtime Database + localStorage cache hybrid
+   Firebase Firestore + localStorage cache hybrid
    ============================================================ */
 
-/* ── FIREBASE REALTIME DB ── */
-var RTDB_URL="https://arihaara-default-rtdb.europe-west1.firebasedatabase.app";
-var DB_MAP={
+/* ── FIRESTORE SETUP ── */
+var db=null;
+var FS_MAP={
   "ah_founders":"founders","ah_members":"members","ah_acts":"activities",
   "ah_funds":"funds","ah_contribs":"contributions",
   "ah_slides_rm":"slides_removed","ah_slides_ex":"slides_extra"
 };
 
-/* Save to Firebase RTDB via REST API */
 function fbSave(localKey,data){
-  var path=DB_MAP[localKey];if(!path)return;
-  var xhr=new XMLHttpRequest();
-  xhr.open("PUT",RTDB_URL+"/"+path+".json",true);
-  xhr.setRequestHeader("Content-Type","application/json");
-  xhr.onload=function(){
-    if(xhr.status>=200&&xhr.status<300){console.log("Firebase saved:",path);}
-    else{console.error("Firebase save error:",path,xhr.status);}
-  };
-  xhr.onerror=function(){console.error("Firebase network error:",path);};
-  xhr.send(JSON.stringify(data));
+  if(!db)return;
+  var col=FS_MAP[localKey];if(!col)return;
+  db.collection(col).doc("data").set({items:data,ts:Date.now()})
+    .then(function(){console.log("Firestore saved:",col);})
+    .catch(function(e){console.error("Firestore save error:",col,e);});
 }
 
-/* Load from Firebase RTDB via REST API */
-function fbLoad(localKey,callback){
-  var path=DB_MAP[localKey];if(!path){callback(null);return;}
-  var xhr=new XMLHttpRequest();
-  xhr.open("GET",RTDB_URL+"/"+path+".json",true);
-  xhr.onload=function(){
-    if(xhr.status>=200&&xhr.status<300){
-      try{
-        var d=JSON.parse(xhr.responseText);
-        if(d===null||d===undefined){callback(null);return;}
-        /* Firebase RTDB converts arrays to objects with numeric keys - convert back */
-        if(d&&typeof d==="object"&&!Array.isArray(d)){
-          var arr=[];var ks=Object.keys(d);
-          for(var i=0;i<ks.length;i++){arr.push(d[ks[i]]);}
-          callback(arr);
-        } else {
-          callback(d);
+function fbLoad(col,callback){
+  if(!db){callback(null);return;}
+  db.collection(col).doc("data").get()
+    .then(function(doc){
+      if(doc.exists&&doc.data()&&doc.data().items){callback(doc.data().items);}
+      else{callback(null);}
+    })
+    .catch(function(e){console.warn("Firestore load error:",col,e);callback(null);});
+}
+
+function pushAllToFirestore(){
+  if(!db)return;
+  var keys=Object.keys(FS_MAP);
+  for(var i=0;i<keys.length;i++){
+    var data=ahLoad(keys[i],null);
+    if(data!==null)fbSave(keys[i],data);
+  }
+  console.log("All local data pushed to Firestore!");
+  if(typeof showToast==="function")showToast("Donnees synchronisees !");
+}
+
+function syncFromFirestore(){
+  if(!db)return;
+  var keys=Object.keys(FS_MAP);
+  var loaded=0;var gotAny=false;
+  for(var i=0;i<keys.length;i++){
+    (function(localKey){
+      var col=FS_MAP[localKey];
+      fbLoad(col,function(data){
+        if(data!==null){
+          try{localStorage.setItem(localKey,JSON.stringify(data));}catch(e){}
+          gotAny=true;
         }
-      }catch(e){callback(null);}
-    } else {callback(null);}
-  };
-  xhr.onerror=function(){callback(null);};
-  xhr.send();
-}
-
-/* Push ALL local data to Firebase (first-time migration) */
-function pushAllToFirebase(){
-  var keys=Object.keys(DB_MAP);
-  keys.forEach(function(localKey){
-    var data=ahLoad(localKey,null);
-    if(data!==null){fbSave(localKey,data);}
-  });
-  console.log("All local data pushed to Firebase!");
-  if(typeof showToast==="function")showToast("Donnees synchronisees vers le cloud !");
-}
-
-/* Sync from Firebase on page load */
-function syncFromFirebase(){
-  var keys=Object.keys(DB_MAP);
-  var loaded=0;
-  var gotAny=false;
-  keys.forEach(function(localKey){
-    fbLoad(localKey,function(data){
-      if(data!==null){
-        try{localStorage.setItem(localKey,JSON.stringify(data));}catch(e){}
-        gotAny=true;
-      }
-      loaded++;
-      if(loaded===keys.length){
-        if(gotAny){
-          /* re-render everything */
-          if(typeof renderFunds==="function")renderFunds();
-          if(typeof renderActs==="function")renderActs();
-          if(typeof renderAllMembers==="function")renderAllMembers();
-          if(typeof renderFounders==="function")renderFounders();
-          if(typeof renderMyContribs==="function")renderMyContribs();
-          if(typeof renderAllContribs==="function")renderAllContribs();
-          if(typeof updateTotal==="function")updateTotal();
-          if(typeof renderMembershipTrackers==="function")renderMembershipTrackers();
-          if(typeof buildSlides==="function")buildSlides();
-          console.log("Firebase sync complete - data loaded");
-        } else {
-          /* Firebase is empty - push local data up */
-          console.log("Firebase empty - pushing local data up");
-          pushAllToFirebase();
+        loaded++;
+        if(loaded===keys.length){
+          if(gotAny){
+            if(typeof renderFunds==="function")renderFunds();
+            if(typeof renderActs==="function")renderActs();
+            if(typeof renderAllMembers==="function")renderAllMembers();
+            if(typeof renderFounders==="function")renderFounders();
+            if(typeof renderMyContribs==="function")renderMyContribs();
+            if(typeof renderAllContribs==="function")renderAllContribs();
+            if(typeof updateTotal==="function")updateTotal();
+            if(typeof renderMembershipTrackers==="function")renderMembershipTrackers();
+            if(typeof buildSlides==="function")buildSlides();
+            console.log("Firestore sync complete");
+          } else {
+            console.log("Firestore empty - pushing local data up");
+            pushAllToFirestore();
+          }
         }
-      }
-    });
-  });
+      });
+    })(keys[i]);
+  }
 }
 
-/* Init on page load */
-window.addEventListener("load",function(){setTimeout(syncFromFirebase,300);});
+window.addEventListener("load",function(){
+  setTimeout(function(){
+    try{
+      if(typeof firebase!=="undefined"&&firebase.firestore){
+        db=firebase.firestore();
+        console.log("Firestore connected!");
+        syncFromFirestore();
+      } else {
+        console.warn("Firebase SDK not loaded yet");
+      }
+    }catch(e){console.warn("Firestore init error:",e);}
+  },500);
+});
 
 /* ── LOCAL STORAGE (cache layer) ── */
 function ahLoad(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
