@@ -180,8 +180,13 @@
       <div class="fg"><label>Nom</label><input type="text" id="act-name" placeholder="ex: Festival de l&rsquo;&eacute;levage"/></div>
       <div class="fg"><label>Date / P&eacute;riode</label><input type="text" id="act-date" placeholder="ex: Juin 2024"/></div>
       <div class="fg"><label>Description</label><textarea id="act-desc" placeholder="D&eacute;crivez cette activit&eacute;&#8230;"></textarea></div>
-      <div class="fg"><label>Photos (URL)</label>
-        <div class="url-row"><input type="url" id="act-photo-in" placeholder="https://&#8230;"/><button class="btn-p" onclick="addActPhoto()">+</button></div>
+      <div class="fg">
+        <label>Photos (depuis votre ordinateur ou t&eacute;l&eacute;phone)</label>
+        <label class="upload-btn" style="width:100%;justify-content:center;padding:.9rem">
+          &#128247; Choisir des photos (s&eacute;lection multiple)
+          <input type="file" accept="image/*" multiple style="display:none" onchange="handleActPhotos(this)"/>
+        </label>
+        <p style="font-size:.72rem;color:#aaa;margin-top:.3rem;text-align:center">Vous pouvez s&eacute;lectionner plusieurs photos &agrave; la fois</p>
       </div>
       <div class="photo-row" id="act-photos-row"></div>
       <button class="btn-p full" onclick="saveAct()">Enregistrer</button>
@@ -190,14 +195,40 @@
 </div>
 
 <!-- FUND FORM -->
+<style>.emoji-btn{background:rgba(13,74,71,.06);border:1px solid #e0dcd0;border-radius:6px;width:38px;height:38px;font-size:1.3rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}.emoji-btn:hover{background:rgba(13,74,71,.15);transform:scale(1.15);}</style>
 <div class="overlay" id="ov-fund">
   <div class="modal">
     <div class="mhd"><h3>Nouveau Fonds</h3><button class="mclose" onclick="closeOv('ov-fund')">&#215;</button></div>
     <div class="mbd">
+      <div class="fg"><label>Type de collecte</label>
+        <select id="fund-type" style="width:100%;padding:.6rem;border:1px solid #ddd;border-radius:3px;font-size:.9rem;font-family:Lato,sans-serif">
+          <option value="regular">Cagnotte / Projet</option>
+          <option value="membership">Cotisation annuelle / Adh&eacute;sion</option>
+        </select>
+      </div>
       <div class="fg"><label>Nom du fonds</label><input type="text" id="fund-name" placeholder="ex: Construction &eacute;cole"/></div>
-      <div class="fg"><label>Ic&ocirc;ne (emoji)</label><input type="text" id="fund-icon" placeholder="ex: &#127979;" maxlength="4"/></div>
+      <div class="fg"><label>Ic&ocirc;ne (emoji)</label><input type="text" id="fund-icon" placeholder="Cliquez ci-dessous" maxlength="4"/>
+        <div style="margin-top:.5rem;display:flex;flex-wrap:wrap;gap:6px">
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127979;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128176;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127982;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128138;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127793;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128170;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#9968;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128666;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127968;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128218;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#9978;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128587;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#127775;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#10084;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#129309;</button>
+          <button type="button" class="emoji-btn" onclick="document.getElementById('fund-icon').value=this.textContent">&#128591;</button>
+        </div>
+      </div>
       <div class="fg"><label>Description</label><textarea id="fund-desc" placeholder="D&eacute;crivez l&rsquo;objectif&#8230;"></textarea></div>
-      <div class="fg"><label>Objectif (FCFA)</label><input type="number" id="fund-goal" placeholder="ex: 1000000"/></div>
+      <div class="fg"><label>Objectif (MRU)</label><input type="number" id="fund-goal" placeholder="ex: 1000000"/></div>
       <button class="btn-p full" onclick="saveFund()">Cr&eacute;er le fonds</button>
     </div>
   </div>
