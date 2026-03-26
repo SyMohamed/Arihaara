@@ -297,19 +297,23 @@ function openFundForm(){
   openOv("ov-fund");
 }
 function saveFund(){
-  var name=getVal("fund-name");if(!name){alert("Nom requis.");return;}
+  var name=getVal("fund-name");
+  if(!name){alert("Nom requis.");return;}
   var typeEl=document.getElementById("fund-type");
-  var ftype=typeEl?typeEl.value:"regular";
-  var f={id:"fund_"+Date.now(),name:name,desc:getVal("fund-desc"),icon:getVal("fund-icon")||"💰",goal:parseInt(getVal("fund-goal"))||0,type:ftype};
-  var funds=getFunds();funds.push(f);
-  var saved=saveFunds(funds);
-  if(!saved){return;}
-  setVal("fund-name","");setVal("fund-desc","");setVal("fund-goal","");setVal("fund-icon","");
-  closeOv("ov-fund");closeOv("ov-admin");
-  renderAdminFunds();
-  if(typeof renderFunds==="function")renderFunds();
-  if(typeof updateTotal==="function")updateTotal();
-  alert("Fonds cree avec succes !");
+  var ftype=(typeEl&&typeEl.value)?typeEl.value:"regular";
+  var icon=getVal("fund-icon")||"💰";
+  var goal=parseInt(getVal("fund-goal"))||0;
+  var desc=getVal("fund-desc");
+  var f={id:"fund_"+Date.now(),name:name,desc:desc,icon:icon,goal:goal,type:ftype};
+  var funds=getFunds();
+  funds.push(f);
+  try{
+    localStorage.setItem("ah_funds",JSON.stringify(funds));
+  }catch(e){
+    alert("Erreur: stockage plein.");return;
+  }
+  /* reload page so funds grid re-renders from fresh localStorage data */
+  window.location.reload();
 }
 function deleteFund(id){
   if(!confirm("Supprimer ce fonds?"))return;
