@@ -2,7 +2,40 @@
    data.js  -  Ari-Haara shared data engine
    ============================================================ */
 function ahLoad(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
-function ahSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){alert("Erreur de sauvegarde: stockage plein. Essayez avec moins de photos.");return false;}}
+function ahSave(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));return true;}
+  catch(e){
+    /* try to free space by removing old proof images from approved contribs */
+    try{
+      var c=JSON.parse(localStorage.getItem("ah_contribs")||"[]");
+      var freed=false;
+      for(var i=0;i<c.length;i++){if(c[i].proof&&c[i].status==="approved"){c[i].proof="";freed=true;}}
+      if(freed){localStorage.setItem("ah_contribs",JSON.stringify(c));}
+      localStorage.setItem(k,JSON.stringify(v));return true;
+    }catch(e2){
+      if(confirm("Stockage plein. Voulez-vous vider les anciennes donnees pour liberer de l espace ?")){
+        clearOldData();
+        try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e3){alert("Stockage toujours plein. Supprimez des activites ou photos.");return false;}
+      }
+      return false;
+    }
+  }
+}
+function clearOldData(){
+  /* remove proof images from all contribs */
+  var c=ahLoad("ah_contribs",[]);
+  for(var i=0;i<c.length;i++){c[i].proof="";}
+  try{localStorage.setItem("ah_contribs",JSON.stringify(c));}catch(e){}
+  /* recompress any oversized founder/member photos */
+  var keys=["ah_founders","ah_members"];
+  for(var k=0;k<keys.length;k++){
+    var items=ahLoad(keys[k],[]);var changed=false;
+    for(var j=0;j<items.length;j++){
+      if(items[j].photo&&items[j].photo.length>50000){items[j].photo="";changed=true;}
+    }
+    if(changed)try{localStorage.setItem(keys[k],JSON.stringify(items));}catch(e){}
+  }
+}
 function ahSession(k,def){try{var v=sessionStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
 function ahSaveSession(k,v){try{sessionStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 
@@ -45,7 +78,7 @@ window.addEventListener("click",function(e){if(e.target&&e.target.classList&&e.t
 
 /* IMAGE COMPRESSION - resizes images to save localStorage space */
 function compressImage(file,maxW,maxH,quality,cb){
-  maxW=maxW||600;maxH=maxH||600;quality=quality||0.6;
+  maxW=maxW||400;maxH=maxH||400;quality=quality||0.4;
   var reader=new FileReader();
   reader.onload=function(e){
     var img=new Image();
@@ -219,7 +252,7 @@ function handleActPhotos(input){
   var remaining=files.length;
   for(var i=0;i<files.length;i++){
     (function(file){
-      compressImage(file,800,800,0.55,function(data){
+      compressImage(file,600,600,0.4,function(data){
         _actPhotos.push(data);
         remaining--;
         if(remaining===0)renderActPhotosPreview();
