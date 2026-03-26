@@ -105,7 +105,29 @@
   </div>
 
   <!-- ── FUNDS GRID ── -->
-  <div class="fund-grid" id="funds-grid"></div>
+  <!-- Cotisations Membres -->
+  <div id="membership-funds-section" style="display:none">
+    <div style="max-width:1080px;margin:0 auto;padding:2.5rem 2rem 0">
+      <p class="lbl" style="color:var(--teal)">&#128101; Adhesions</p>
+      <h2 style="font-family:Cinzel,serif;font-size:1.4rem;color:var(--teal-dark);margin-bottom:.3rem">Cotisations Membres</h2>
+      <p style="font-family:'Cormorant Garamond',serif;color:#888;font-size:.95rem;margin-bottom:1.5rem">Cotisations annuelles et adhesions des membres</p>
+    </div>
+    <div class="fund-grid" id="membership-funds-grid"></div>
+  </div>
+
+  <!-- Fonds Collectifs -->
+  <div id="regular-funds-section" style="display:none">
+    <div style="max-width:1080px;margin:0 auto;padding:2.5rem 2rem 0">
+      <p class="lbl" style="color:var(--gold)">&#128176; Cagnotte</p>
+      <h2 style="font-family:Cinzel,serif;font-size:1.4rem;color:var(--teal-dark);margin-bottom:.3rem">Fonds Collectifs</h2>
+      <p style="font-family:'Cormorant Garamond',serif;color:#888;font-size:.95rem;margin-bottom:1.5rem">Projets communautaires et collectes solidaires</p>
+    </div>
+    <div class="fund-grid" id="regular-funds-grid"></div>
+  </div>
+
+  <div id="no-funds-msg" style="display:none;text-align:center;padding:4rem 2rem;font-family:'Cormorant Garamond',serif;font-size:1.15rem;color:#aaa;">
+    Aucun fonds pour le moment.
+  </div>
 
   <!-- ── MEMBERSHIP TRACKERS ── -->
   <div id="membership-trackers"></div>
@@ -363,48 +385,72 @@ function submitContrib(){
   updateTotal();
 }
 
-/* ── Render funds grid ── */
+/* ── Build a fund card HTML ── */
+function buildFundCard(f,contribs){
+  var raised=0;var count=0;
+  for(var j=0;j<contribs.length;j++){
+    if(contribs[j].fundId===f.id){raised+=contribs[j].amount;count++;}
+  }
+  var pct=f.goal>0?Math.min(100,Math.round(raised/f.goal*100)):0;
+  var h='<div class="fund-card" onclick="openContribModal(\''+f.id+'\')">';
+  h+='<div class="fund-card-top">';
+  h+='<div class="fund-icon">'+(f.icon||"💰")+'</div>';
+  h+='<div class="fund-name">'+f.name+'</div>';
+  h+='<div class="fund-desc">'+(f.desc||"")+'</div>';
+  h+='<div class="fund-stats">';
+  h+='<div class="fund-raised">'+raised.toLocaleString("fr-FR")+' MRU</div>';
+  if(f.goal>0)h+='<div class="fund-goal">Objectif: '+f.goal.toLocaleString("fr-FR")+' MRU</div>';
+  h+='</div>';
+  if(f.goal>0){h+='<div class="fund-bar-wrap"><div class="fund-bar" style="width:'+pct+'%"></div></div>';}
+  h+='</div>';
+  h+='<div class="fund-card-bottom">';
+  h+='<div class="fund-contributors">'+count+' contribution'+(count!==1?"s":"")+'</div>';
+  h+='<button class="fund-btn" onclick="event.stopPropagation();openContribModal(\''+f.id+'\')">Contribuer</button>';
+  h+='</div></div>';
+  return h;
+}
+
+/* ── Render funds into two sections ── */
 function renderFunds(){
-  var el=document.getElementById("funds-grid");if(!el)return;
   var funds=getFunds();
   var contribs=getContribs().filter(function(c){return c.status==="approved";});
+  var memFunds=[];var regFunds=[];
+  for(var i=0;i<funds.length;i++){
+    if(funds[i].type==="membership")memFunds.push(funds[i]);
+    else regFunds.push(funds[i]);
+  }
+
+  var memSec=document.getElementById("membership-funds-section");
+  var regSec=document.getElementById("regular-funds-section");
+  var memGrid=document.getElementById("membership-funds-grid");
+  var regGrid=document.getElementById("regular-funds-grid");
+  var noMsg=document.getElementById("no-funds-msg");
 
   if(!funds.length){
-    el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:4rem 2rem;font-family:\'Cormorant Garamond\',serif;font-size:1.15rem;color:#aaa;">Aucun fonds pour le moment.</div>';
+    if(memSec)memSec.style.display="none";
+    if(regSec)regSec.style.display="none";
+    if(noMsg)noMsg.style.display="block";
     renderMembershipTrackers();
     return;
   }
+  if(noMsg)noMsg.style.display="none";
 
-  var h="";
-  for(var i=0;i<funds.length;i++){
-    var f=funds[i];
-    var raised=0;var count=0;
-    for(var j=0;j<contribs.length;j++){
-      if(contribs[j].fundId===f.id){raised+=contribs[j].amount;count++;}
-    }
-    var pct=f.goal>0?Math.min(100,Math.round(raised/f.goal*100)):0;
+  /* Cotisations Membres */
+  if(memFunds.length&&memSec&&memGrid){
+    memSec.style.display="block";
+    var mh="";
+    for(var mi=0;mi<memFunds.length;mi++)mh+=buildFundCard(memFunds[mi],contribs);
+    memGrid.innerHTML=mh;
+  } else if(memSec){memSec.style.display="none";}
 
-    h+='<div class="fund-card" onclick="openContribModal(\''+f.id+'\')">';
-    h+='<div class="fund-card-top">';
-    h+='<div class="fund-icon">'+(f.icon||"💰")+'</div>';
-    h+='<div class="fund-name">'+f.name;
-    if(f.type==="membership")h+=' <span style="font-size:.65rem;background:rgba(13,74,71,.1);color:var(--teal);padding:1px 6px;border-radius:8px">Adhesion</span>';
-    h+='</div>';
-    h+='<div class="fund-desc">'+(f.desc||"")+'</div>';
-    h+='<div class="fund-stats">';
-    h+='<div class="fund-raised">'+raised.toLocaleString("fr-FR")+' MRU</div>';
-    if(f.goal>0)h+='<div class="fund-goal">Objectif: '+f.goal.toLocaleString("fr-FR")+' MRU</div>';
-    h+='</div>';
-    if(f.goal>0){
-      h+='<div class="fund-bar-wrap"><div class="fund-bar" style="width:'+pct+'%"></div></div>';
-    }
-    h+='</div>';
-    h+='<div class="fund-card-bottom">';
-    h+='<div class="fund-contributors">'+count+' contribution'+(count!==1?"s":"")+'</div>';
-    h+='<button class="fund-btn" onclick="event.stopPropagation();openContribModal(\''+f.id+'\')">Contribuer</button>';
-    h+='</div></div>';
-  }
-  el.innerHTML=h;
+  /* Fonds Collectifs */
+  if(regFunds.length&&regSec&&regGrid){
+    regSec.style.display="block";
+    var rh="";
+    for(var ri=0;ri<regFunds.length;ri++)rh+=buildFundCard(regFunds[ri],contribs);
+    regGrid.innerHTML=rh;
+  } else if(regSec){regSec.style.display="none";}
+
   renderMembershipTrackers();
 }
 
