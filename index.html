@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Ari-Haara &mdash; Accueil</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="style.css?v=3"/>
+<link rel="stylesheet" href="style.css?v=4"/>
 </head>
 <body>
 
@@ -281,8 +281,21 @@
   </div>
 </div>
 
-<link rel="stylesheet" href="style.css?v=3"/>
-<script src="data.js?v=3"></script>
+<link rel="stylesheet" href="style.css?v=4"/>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyCY1LnnXNjUjKhWY6ck5X-lrcLj0mMvdvE",
+    authDomain: "arihaara.firebaseapp.com",
+    projectId: "arihaara",
+    storageBucket: "arihaara.firebasestorage.app",
+    messagingSenderId: "1034656505245",
+    appId: "1:1034656505245:web:eca4018469b3ae3021a374"
+  });
+</script>
+<script src="data.js?v=4"></script>
 <script>
 (function(){
   var btn=document.getElementById("member-nav-btn");
