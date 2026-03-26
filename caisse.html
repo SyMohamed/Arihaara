@@ -201,6 +201,7 @@
         <button class="tab active" onclick="swTab(0)">Fonds</button>
         <button class="tab" onclick="swTab(1)">Contributions</button>
         <button class="tab" onclick="swTab(2)">Membres</button>
+        <button class="tab" onclick="swTab(3)">Donnees</button>
       </div>
 
       <!-- Tab 0: Fonds -->
@@ -219,6 +220,14 @@
       <div class="tpanel" id="tp-2">
         <button class="btn-add" onclick="openMemberForm()">+ Ajouter un membre</button>
         <div class="alist" id="members-alist"></div>
+      </div>
+
+      <!-- Tab 3: Donnees -->
+      <div class="tpanel" id="tp-3">
+        <div class="notice" style="margin-bottom:1rem">Exportez vos donnees pour les importer sur un autre appareil.</div>
+        <button class="btn-p full" onclick="exportAllData()" style="margin-bottom:.6rem;background:var(--gold);color:var(--black)">&#128190; Exporter toutes les donnees</button>
+        <button class="btn-p full" onclick="importAllData()" style="margin-bottom:.6rem">&#128194; Importer des donnees</button>
+        <button class="btn-p full" onclick="exportContribsCSV()" style="margin-bottom:.6rem;background:var(--teal-light);color:var(--cream)">&#128196; Exporter contributions (CSV)</button>
       </div>
 
       <div style="margin-top:1.2rem;text-align:right;">
