@@ -115,7 +115,10 @@
       <div class="tpanel active" id="tp-0">
         <p style="font-size:.8rem;color:#888;margin-bottom:.8rem">Photos du diaporama (noir &amp; blanc automatique).</p>
         <div class="photo-row" id="slides-thumbs"></div>
-        <div class="fg url-row"><input type="url" id="new-slide-url" placeholder="URL photo&#8230;"/><button class="btn-p" onclick="addSlide()">+ Ajouter</button></div>
+        <label class="upload-btn" style="width:100%;justify-content:center;padding:.9rem;margin-top:.5rem">
+          &#128247; Ajouter des photos depuis votre appareil
+          <input type="file" accept="image/*" multiple style="display:none" onchange="addSlideFiles(this)"/>
+        </label>
         <hr style="margin:1rem 0;border:none;border-top:1px solid #eee"/>
         <button class="btn-p danger full" onclick="doAdminLogout()">D&eacute;connexion</button>
       </div>

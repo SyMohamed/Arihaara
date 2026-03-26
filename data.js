@@ -322,6 +322,25 @@ function addSlide(){
   var ex=getSlidesExtra();ex.push({id:"ex_"+Date.now(),src:url});saveSlidesExtra(ex);
   setVal("new-slide-url","");renderAdminSlides();if(typeof buildSlides==="function")buildSlides();
 }
+function addSlideFiles(input){
+  var files=input.files;if(!files||!files.length)return;
+  var ex=getSlidesExtra();
+  var remaining=files.length;
+  for(var i=0;i<files.length;i++){
+    (function(file){
+      compressImage(file,1000,600,0.5,function(data){
+        ex.push({id:"ex_"+Date.now()+"_"+Math.random().toString(36).substr(2,4),src:data});
+        remaining--;
+        if(remaining===0){
+          saveSlidesExtra(ex);
+          renderAdminSlides();
+          if(typeof buildSlides==="function")buildSlides();
+        }
+      });
+    })(files[i]);
+  }
+  input.value="";
+}
 function removeSlide(id){
   if(id.indexOf("base_")===0){var rm=getSlidesRemoved();if(rm.indexOf(id)===-1)rm.push(id);saveSlidesRemoved(rm);}
   else saveSlidesExtra(getSlidesExtra().filter(function(s){return s.id!==id;}));
