@@ -347,7 +347,10 @@ function renderAllMembers(){
 var _signupPhotoData="";
 function handleSignupPhoto(input){
   var file=input.files[0];if(!file)return;
-  compressImage(file,250,250,0.5,function(data){
+  if(file.size>250*1024){
+    alert("Photo trop volumineuse ("+Math.round(file.size/1024)+" KB). Maximum 250 KB.\n\nVotre photo sera compresse automatiquement, mais pour de meilleurs resultats, reduisez-la sur:\nhttps://tinypng.com ou https://compressjpeg.com");
+  }
+  compressImage(file,250,250,0.4,function(data){
     _signupPhotoData=data;
     var prev=document.getElementById("signup-photo-prev");
     var wrap=document.getElementById("signup-photo-wrap");

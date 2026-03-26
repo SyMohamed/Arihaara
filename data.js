@@ -77,8 +77,13 @@ window.addEventListener("scroll",function(){var n=document.getElementById("main-
 window.addEventListener("click",function(e){if(e.target&&e.target.classList&&e.target.classList.contains("overlay"))e.target.classList.remove("open");});
 
 /* IMAGE COMPRESSION - resizes images to save localStorage space */
+var MAX_FILE_KB=250;
 function compressImage(file,maxW,maxH,quality,cb){
   maxW=maxW||400;maxH=maxH||400;quality=quality||0.4;
+  if(file.size>MAX_FILE_KB*1024){
+    /* file too large - compress it automatically */
+    quality=Math.min(quality,0.3);
+  }
   var reader=new FileReader();
   reader.onload=function(e){
     var img=new Image();
@@ -92,7 +97,12 @@ function compressImage(file,maxW,maxH,quality,cb){
       canvas.width=w;canvas.height=h;
       var ctx=canvas.getContext("2d");
       ctx.drawImage(img,0,0,w,h);
-      cb(canvas.toDataURL("image/jpeg",quality));
+      var result=canvas.toDataURL("image/jpeg",quality);
+      /* if still too large, reduce further */
+      if(result.length>MAX_FILE_KB*1024){
+        result=canvas.toDataURL("image/jpeg",0.2);
+      }
+      cb(result);
     };
     img.src=e.target.result;
   };
@@ -168,6 +178,7 @@ function saveFounder(){
   renderAdminFounders();
 }
 function deleteFounder(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(!confirm("Supprimer?"))return;
   saveFounders(getFounders().filter(function(f){return f.id!==id;}));
   if(typeof renderFounders==="function")renderFounders();
@@ -213,6 +224,7 @@ function approveMember(id){
   saveMembers(m);renderAdminMembers();if(typeof renderAllMembers==="function")renderAllMembers();
 }
 function deleteMember(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(!confirm("Supprimer?"))return;
   saveMembers(getMembers().filter(function(m){return m.id!==id;}));
   renderAdminMembers();if(typeof renderAllMembers==="function")renderAllMembers();
@@ -275,6 +287,7 @@ function renderActPhotosPreview(){
 function rmActPhoto(i){_actPhotos.splice(i,1);renderActPhotosPreview();}
 
 function delAct(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(!confirm("Supprimer?"))return;
   saveActs(getActs().filter(function(a){return a.id!==id;}));
   renderActAlist();if(typeof renderActs==="function")renderActs();
@@ -342,6 +355,7 @@ function addSlideFiles(input){
   input.value="";
 }
 function removeSlide(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(id.indexOf("base_")===0){var rm=getSlidesRemoved();if(rm.indexOf(id)===-1)rm.push(id);saveSlidesRemoved(rm);}
   else saveSlidesExtra(getSlidesExtra().filter(function(s){return s.id!==id;}));
   renderAdminSlides();if(typeof buildSlides==="function")buildSlides();
@@ -392,6 +406,7 @@ function saveFund(){
   showToast("Fonds cree avec succes !");
 }
 function deleteFund(id){
+  if(!_isAdmin){alert("Seul l administrateur peut supprimer.");return;}
   if(!confirm("Supprimer ce fonds?"))return;
   saveFunds(getFunds().filter(function(f){return f.id!==id;}));
   renderAdminFunds();if(typeof renderFunds==="function")renderFunds();
@@ -435,6 +450,7 @@ function approveContrib(id){
   if(typeof updateTotal==="function")updateTotal();
 }
 function rejectContrib(id){
+  if(!_isAdmin){alert("Seul l administrateur peut rejeter.");return;}
   if(!confirm("Rejeter?"))return;
   saveContribs(getContribs().filter(function(c){return c.id!==id;}));
   renderAdminContribs();
