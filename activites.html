@@ -110,6 +110,7 @@
     <li><a href="membres.html">Membres</a></li>
     <li><a href="caisse.html">Caisse Solidaire</a></li>
   </ul>
+  <a href="membres.html" class="btn-member-nav" id="member-nav-btn">&#128100; Connexion</a>
   <button class="btn-admin" id="admin-nav-btn" onclick="openLoginOrPanel()">Admin</button>
 </nav>
 
@@ -232,6 +233,14 @@
 </div>
 
 <script src="data.js?v=2"></script>
+<script>
+(function(){
+  var btn=document.getElementById("member-nav-btn");
+  if(!btn)return;
+  var m=curMember();
+  if(m){btn.textContent=m.name;btn.href="membres.html";}
+})();
+</script>
 <script>
 document.getElementById("pw-input").addEventListener("keydown",function(e){if(e.key==="Enter")doAdminLogin();});
 
